@@ -54,9 +54,15 @@ MojSignal napoved = A.predict();
 <p>
 <pre>
 #include "hlib.h"<br/>
-    ...<br/>
-    sprogar::Human_like_intelligence_benchmark&lt;MojBrain, MojSignal&gt; hlib;
-    hlib.run();
+class MojSignal {...};<br/>
+class MojBrain {...};<br/>
+
+int main()
+{
+&nbsp;&nbsp;&nbsp;&nbsp;sprogar::Human_like_intelligence_benchmark&lt;MojBrain, MojSignal&gt; hlib;
+&nbsp;&nbsp;&nbsp;&nbsp;hlib.run();
+&nbsp;&nbsp;&nbsp;&nbsp;return 0;
+}
 </pre>
 </p>
 <p>
