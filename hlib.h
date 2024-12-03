@@ -163,7 +163,7 @@ namespace sprogar
 				ASSERT(A == B);
 			},			
 			[&]() {
-				clog << "#5 Cause (equal behaviour implies equal state)\n";
+				clog << "#4 Cause (equal behaviour implies equal state)\n";
 
 				Brain A;
 				A << random_sequence(SequenceLength);
