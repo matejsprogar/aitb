@@ -1,4 +1,4 @@
-<h1>Human like intelligence benchmark</h1>
+<h1>HLIB - Human-Like Intelligence Benchmark</h1>
 
 <h4>HIPOTEZA:</h4>
 <p>
@@ -21,14 +21,16 @@ Izdelati nevronsko mrežo (<em>class Brain</em>), ki ima dve enostavni funkciona
 <li>napove lahko naslednji signal.</li>
   </ol>
 <p>
-Vsak signal je skupina bitov, ki predstavljajo senzorične vhode. Pomen bitov ni pomemben, število bitov pa je poljubno. Razred Signal mora omogočati kreacijo naključnih signalov s pomočjo statične <em>random</em> funkcije; slednja mora imeti dve obliki:
+Vsak signal sestoji iz več bitov (na primer 6 bitov v 2x3 matriki), ki predstavljajo senzorične vhode; pomen bitov ni pomemben, število bitov je poljubno. Razred Signal mora omogočati kreacijo naključnih signalov s pomočjo dveh statičnih <em>random</em> funkcij:
   </p>
   <ol type="a">
-<li> <em>Signal::random()</em> vrne objekt, kjer so vsi biti naključno postavljeni; in</li>
-<li> <em>Signal::random(Signal mask)</em> vrne objekt, kjer so naključno postavljeni zgolj tisti biti, ki so del maske.</li>
+<li><em>Signal::random()</em> vrne objekt, kjer so vsi biti naključno postavljeni; in</li>
+<li><em>Signal::random(Signal mask)</em> vrne objekt z naključno postavljenimi zgolj tistimi biti, ki so postavljeni tudi že v maski, ostali bodo 0.</li>
   </ol>
 <p>
-Dodatno mora razred Signal omogočati osnovne bitne manipulacije (binarna | in & ter unarni komplement ~). HLIB testi generirajo kratka (<em>SequenceLength=3</em>) zaporedja naključnih signalov, ki imajo vedno neke odvisnosti. 
+Dodatno mora razred Signal omogočati osnovne bitne manipulacije (binarna | in & ter unarni komplement ~). HLIB testi generirajo kratka (<em>SequenceLength=3</em>) zaporedja naključnih signalov, ki imajo vedno neke odvisnosti.</p>
+<p>
+  Predpostavka je, da počitek nevrona po proženju ("neuron refractory period") ni zgolj fiziološka nujnost, ampak tudi informacijska nujnost, zato test #7. Hkrati so vse časovne sekvence signalov kreirane s tem v mislih (<em>Human_like_intelligence_benchmark::random_sequence()</em>).
 </p>
 
 <h4>Primer glavnega programa</h4>
@@ -41,5 +43,5 @@ Dodatno mora razred Signal omogočati osnovne bitne manipulacije (binarna | in &
 </pre>
 </p>
 <p>
-Trenutno so vsi testi v C++, so pa izjemno preprosti in v toliko verjamem, da ne bo težav pri njihovem razumevanju ter posledično prevajanju v jezik po tvoji izbiri. Če ne poznaš "modernega" C++ lahko enostavno ignoriraš "concept" in "requires" kodo.
+Trenutno so vsi testi v C++, so pa izjemno preprosti in v toliko verjamem, da ne bo težav pri njihovem razumevanju ter posledično prevajanju v jezik po tvoji izbiri. Če ne poznaš "modernega" C++ lahko ignoriraš "<em>concept</em>" in "<em>requires</em>" kodo.
 </p>
