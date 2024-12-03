@@ -21,8 +21,6 @@
 #include <functional>
 #include <iostream>
 #include <vector>
-#include <set>
-#include <deque>
 
 #define ASSERT(expression) (void)((!!(expression)) || (std::cerr << "\033[91mAssertion failed\033[0m\n" \
 	<< __FILE__ << "\nLine " << __LINE__ << ": " << #expression << std::endl, exit(-1), 0))
