@@ -14,10 +14,10 @@ Projekt HLIB vključuje 10 domnevno potrebnih pogojev za inteligenco. Verjamem, 
 
 <h4>Cilj</h4>
 <p>
-Izdelati nevronsko mrežo (<em>class Brain</em>), ki ima dve enostavni funkcionalnosti:
+Izdelati nevronsko mrežo (<em>class MojBrain</em>), ki ima dve enostavni funkcionalnosti:
 </p>
   <ol>
-<li>sprejme lahko vhodni signal (<em>class Signal</em>); in</li>
+<li>sprejme lahko vhodni signal (<em>class MojSignal</em>); in</li>
 <li>napove lahko naslednji signal.</li>
   </ol>
 <p>
@@ -41,9 +41,13 @@ MojBrain A, B = A;
 MojSignal prvi_vzorec = MojSignal::random(), drugi_vzorec = MojSignal::random(~prvi_vzorec);<br/>
   
 bool enaki_mozgani = A == B;
+bool enak_signal = prvi_vzorec == drugi_vzorec;
 MojSignal novi_signal = prvi_vzorec | drugi_vzorec & prvi_vzorec;
 MojSignal prazen_signal = MojSignal{};
-MojSignal poln_signal = ~prazen_signal;
+MojSignal poln_signal = ~prazen_signal;<br/>
+
+A << prvi_vzorec;
+MojSignal napoved = A.predict();
 </pre>
 
 <h4>Primer glavnega programa</h4>
