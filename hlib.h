@@ -138,7 +138,7 @@ namespace sprogar
 		const vector<std::function<void()>> tests =
 		{
 			[&]() {
-				clog << "#1 Default (empty objects are considered equal)\n";
+				clog << "#1 Default (equal initial states)\n";
 
 				Brain A, B;
 
@@ -153,7 +153,7 @@ namespace sprogar
 				ASSERT(A != B);
 			},
 			[&]() {
-				clog << "#3 Determinism (no stochastic actions)\n";
+				clog << "#3 Determinism (equal state implies equal life)\n";
 				const vector<Signal> life = random_sequence(SimulatedInfinity);
 
 				Brain A, B;
@@ -164,12 +164,13 @@ namespace sprogar
 			},			
 			[&]() {
 				clog << "#4 Cause (equal behaviour implies equal state)\n";
+				const vector<Signal> kick_off = random_sequence(SequenceLength);
 
 				Brain A;
-				A << random_sequence(SequenceLength);
+				A << kick_off;
 				Brain B = A;
 
-				ASSERT(equal_behaviour(A, B, SimulatedInfinity));
+				ASSERT(equal_behaviour(A, B, SimulatedInfinity));   // ASSERT(behaviour(A) == behaviour(B));
 			},
 			[&]() {
 				clog << "#5 Time (inputs' ordering matters)\n";
@@ -217,7 +218,7 @@ namespace sprogar
 			[&]() {
 				clog << "#9 Progress (teach new tricks)\n";
 				const vector<Signal> ground_truth = cyclic_random_sequence(SequenceLength),
-										new_trick = cyclic_random_sequence(SequenceLength);
+							new_trick = cyclic_random_sequence(SequenceLength);
 
 				Brain B;
 				adapt(B, ground_truth);
