@@ -28,16 +28,29 @@ Vsak signal sestoji iz več bitov (na primer 6 bitov v 2x3 matriki), ki predstav
 <li><em>Signal::random(Signal mask)</em> vrne objekt z naključno postavljenimi zgolj tistimi biti, ki so postavljeni tudi že v maski, ostali bodo 0.</li>
   </ol>
 <p>
-Dodatno mora razred Signal omogočati osnovne bitne manipulacije (binarna | in & ter unarni komplement ~). HLIB testi generirajo kratka (<em>SequenceLength=3</em>) zaporedja naključnih signalov, ki imajo vedno neke odvisnosti.</p>
+Dodatno mora razred Signal omogočati osnovne bitne manipulacije (binarna operatorja | in & ter unarni komplement ~) ter kopiranje in primerjavo. HLIB testi generirajo kratka (<em>SequenceLength=3</em>) zaporedja naključnih signalov, ki imajo vedno neke odvisnosti.</p>
 <p>
   Predpostavka je, da počitek nevrona po proženju ("neuron refractory period") ni zgolj fiziološka nujnost, ampak tudi informacijska nujnost, zato test #7. Hkrati so vse časovne sekvence signalov kreirane s tem v mislih (<em>Human_like_intelligence_benchmark::random_sequence()</em>).
 </p>
+
+<h4>Koncepti</h4>
+
+<p>Če nimaš C++20 prevajalnika, HLIB pričakuje naslednje funkcionalnosti v tvojih razredih <em>MojBrain</em> in <em>MojSignal</em>:</p>
+<pre>
+MojBrain A, B = A;
+MojSignal prvi_vzorec = MojSignal::random(), drugi_vzorec = MojSignal::random(~prvi_vzorec);<br/>
+  
+bool enaki_mozgani = A == B;
+MojSignal novi_signal = prvi_vzorec | drugi_vzorec & prvi_vzorec;
+MojSignal prazen_signal = MojSignal{};
+MojSignal poln_signal = ~prazen_signal;
+</pre>
 
 <h4>Primer glavnega programa</h4>
 <p>
 <pre>
 #include "hlib.h"<br/>
-...<br/>
+    ...<br/>
     sprogar::Human_like_intelligence_benchmark&lt;MojBrain, MojSignal&gt; hlib;
     hlib.run();
 </pre>
