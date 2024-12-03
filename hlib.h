@@ -119,7 +119,7 @@ namespace sprogar
 		}
 		bool adapt(Brain& B, const vector<Signal>& experience) const
 		{
-			for (time_t time = 0; time < SimulatedInfinity; time += experience.size()) {
+			for (time_t time = 0; time < SimulatedInfinity; ++time) {
 				bool all_predictions_correct = true;
 				for (const Signal& signal : experience) {
 					if (signal != B.predict())
