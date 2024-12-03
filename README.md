@@ -49,6 +49,9 @@ MojSignal poln_signal = ~prazen_signal;<br/>
 A << prvi_vzorec;
 MojSignal napoved = A.predict();
 </pre>
+<p>
+Trenutno so vsi testi v C++, so pa izjemno preprosti in v toliko verjamem, da ne bo težav pri njihovem razumevanju ter posledično prevajanju v jezik po tvoji izbiri. Če ne poznaš "modernega" C++ lahko ignoriraš "<em>concept</em>" in "<em>requires</em>" kodo.
+</p>
 
 <h4>Primer glavnega programa</h4>
 <p>
@@ -65,6 +68,4 @@ int main()
 }
 </pre>
 </p>
-<p>
-Trenutno so vsi testi v C++, so pa izjemno preprosti in v toliko verjamem, da ne bo težav pri njihovem razumevanju ter posledično prevajanju v jezik po tvoji izbiri. Če ne poznaš "modernega" C++ lahko ignoriraš "<em>concept</em>" in "<em>requires</em>" kodo.
-</p>
+
