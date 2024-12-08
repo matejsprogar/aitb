@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Matej Sprogar <matej.sprogar@gmail.com>
+ * Copyright 2024 Matej Sprogar <matej.sprogar@gmail.com>
  *
  * This file is part of HLIB - Human Like Intelligence Benchmark.
  *
@@ -191,56 +191,55 @@ namespace sprogar
 
 					ASSERT(A != B);		// ASSERT(not equal_predictions(A, B, SimulatedInfinity));
 				},
-					// ADAPTATION
-					[&]() {
-						clog << "#7 Refractory period (signal's spike (1) must be followed by a no-spike (0) event)\n";
-						const Signal any = Signal::random();
-						const vector<Signal> learnable = { any, Signal::random(~any) };
-						const vector<Signal> unlearnable = { any, any };		// no refractory periods
+				[&]() {
+					clog << "#7 Refractory period (signal's spike (1) must be followed by a no-spike (0) event)\n";
+					const Signal any = Signal::random();
+					const vector<Signal> learnable = { any, Signal::random(~any) };
+					const vector<Signal> unlearnable = { any, any };		// no refractory periods
 
-						ASSERT((learnable[0] & learnable[1]) == Signal{});
+					ASSERT((learnable[0] & learnable[1]) == Signal{});
 
-						Brain A, B;
+					Brain A, B;
 
-						ASSERT(adapt(A, learnable));
-						ASSERT(not adapt(B, unlearnable) or any == Signal{});
-					},
-					[&]() {
-						clog << "#8 Ground truth (establish beliefs about the world)\n";
-						const vector<Signal> ground_truth = cyclic_random_sequence(SequenceLength);
+					ASSERT(adapt(A, learnable));
+					ASSERT(not adapt(B, unlearnable) or any == Signal{});
+				},
+				[&]() {
+					clog << "#8 Ground truth (establish beliefs about the world)\n";
+					const vector<Signal> ground_truth = cyclic_random_sequence(SequenceLength);
 
-						Brain B;
+					Brain B;
 
-						ASSERT(adapt(B, ground_truth));
-					},
-					[&]() {
-						clog << "#9 Progress (teach new tricks)\n";
-						const vector<Signal> ground_truth = cyclic_random_sequence(SequenceLength),
-									new_trick = cyclic_random_sequence(SequenceLength);
+					ASSERT(adapt(B, ground_truth));
+				},
+				[&]() {
+					clog << "#9 Progress (teach new tricks)\n";
+					const vector<Signal> ground_truth = cyclic_random_sequence(SequenceLength),
+								new_trick = cyclic_random_sequence(SequenceLength);
 
-						Brain B;
-						adapt(B, ground_truth);
+					Brain B;
+					adapt(B, ground_truth);
 
-						ASSERT(adapt(B, new_trick));
-					},
-					[&]() {
-						clog << "#10 Ageing (can't teach an old dog new tricks)\n";
-						auto forever_adaptable = [&](Brain& dog) -> bool {
-							for (unsigned tricks = 0; tricks < SimulatedInfinity; ++tricks) {
-								vector<Signal> new_trick = cyclic_random_sequence(SequenceLength);
-								if (not adapt(dog, new_trick))
-									return false;
-							}
-							return true;
-						};
-						const vector<Signal> first_trick = cyclic_random_sequence(SequenceLength);
+					ASSERT(adapt(B, new_trick));
+				},
+				[&]() {
+					clog << "#10 Ageing (can't teach an old dog new tricks)\n";
+					auto forever_adaptable = [&](Brain& dog) -> bool {
+						for (unsigned tricks = 0; tricks < SimulatedInfinity; ++tricks) {
+							vector<Signal> new_trick = cyclic_random_sequence(SequenceLength);
+							if (not adapt(dog, new_trick))
+								return false;
+						}
+						return true;
+					};
+					const vector<Signal> first_trick = cyclic_random_sequence(SequenceLength);
 
-						Brain B;
-						adapt(B, first_trick);
+					Brain B;
+					adapt(B, first_trick);
 
-						ASSERT(not forever_adaptable(B));
-						ASSERT(adapt(B, first_trick));
-					}
+					ASSERT(not forever_adaptable(B));
+					ASSERT(adapt(B, first_trick));
+				}
 			};
 	};
 }
