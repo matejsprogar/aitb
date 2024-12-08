@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Matej Sprogar <matej.sprogar@gmail.com>
+ * Copyright 2024 Matej Sprogar <matej.sprogar@gmail.com>
  *
  * This file is part of HLIB - Human Like Intelligence Benchmark.
  *
