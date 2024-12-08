@@ -32,7 +32,7 @@ namespace sprogar
 
 	template <typename T, ranges::range Range>
 	T& operator << (T& target, Range&& range) {
-		for (const auto& elt : range)
+		for (auto&& elt : range)
 			target << elt;
 		return target;
 	}
