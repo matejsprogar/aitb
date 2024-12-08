@@ -95,7 +95,7 @@ namespace sprogar
 		}
 		static vector<Signal> cyclic_random_sequence(time_t length)
 		{
-			if (length <= 1) return vector<Signal>{length};
+			if (length <= 1) return vector<Signal>{length, Signal{}};
 
 			vector<Signal> seq = random_sequence(length);
 
