@@ -46,7 +46,7 @@ MojSignal novi_signal = prvi_vzorec | drugi_vzorec & prvi_vzorec;
 MojSignal prazen_signal = MojSignal{};
 MojSignal poln_signal = ~prazen_signal;<br/>
 
-A << prvi_vzorec;
+A << prvi_vzorec << drugi_vzorec;
 MojSignal napoved = A.predict();
 </pre>
 <p>
