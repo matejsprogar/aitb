@@ -178,7 +178,7 @@ namespace sprogar
 					A << any << ~any;
 					B << ~any << any;
 
-					ASSERT(A != B);		// ASSERT(not equal_predictions(A, B, SimulatedInfinity));
+					ASSERT(A != B);
 				},
 				[&]() {
 					clog << "#6 Sensitivity (brains are chaotic systems)\n";
@@ -189,7 +189,7 @@ namespace sprogar
 					A << initial_condition << life;
 					B << ~initial_condition << life;
 
-					ASSERT(A != B);		// ASSERT(not equal_predictions(A, B, SimulatedInfinity));
+					ASSERT(A != B);
 				},
 				[&]() {
 					clog << "#7 Refractory period (signal's spike (1) must be followed by a no-spike (0) event)\n";
