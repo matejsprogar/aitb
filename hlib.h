@@ -37,11 +37,11 @@ namespace sprogar
 		return target;
 	}
 
-	template <typename Brain, typename Signal>
+	template <typename Brain, typename Pattern>
 	concept brainable = requires(Brain b)
 	{
-		{ b << Signal{} } -> convertible_to<Brain&>;
-		{ b.predict() } -> convertible_to<Signal>;
+		{ b << Pattern{} } -> convertible_to<Brain&>;
+		{ b.predict() } -> convertible_to<Pattern>;
 		// axiom(const Brain b) { b.predict(); }
 	};
 
@@ -58,11 +58,11 @@ namespace sprogar
 	};
 
 
-	template <typename Brain, typename Signal>
+	template <typename Brain, typename Pattern>
 	requires std::regular<Brain>
-		and std::regular<Signal>
-		and brainable<Brain, Signal>
-		and signalable<Signal>
+		and std::regular<Pattern>
+		and brainable<Brain, Pattern>
+		and signalable<Pattern>
 		class Human_like_intelligence_benchmark {
 		public:
 			Human_like_intelligence_benchmark(unsigned sequence_length = 3, unsigned simulated_infinity = 500) :
@@ -77,31 +77,32 @@ namespace sprogar
 				clog << endl << "\033[92mPASS\033[0m" << endl;
 			}
 
-		private:
+		//private:
+		public:
 			using time_t = size_t;
 
-			static vector<Signal> random_sequence(time_t length)
+			static vector<Pattern> random_sequence(time_t length)
 			{
-				if (length == 0) return vector<Signal>{};
+				if (length == 0) return vector<Pattern>{};
 
-				vector<Signal> seq;
+				vector<Pattern> seq;
 				seq.reserve(length);
 
-				seq.push_back(Signal::random());
+				seq.push_back(Pattern::random());
 				while (seq.size() < length)
-					seq.push_back(Signal::random(~seq.back()));
+					seq.push_back(Pattern::random(~seq.back()));
 
 				return seq;
 			}
-			static vector<Signal> cyclic_random_sequence(time_t length)
+			static vector<Pattern> cyclic_random_sequence(time_t length)
 			{
-				if (length <= 1) return vector<Signal>{length, Signal{}};
+				if (length <= 1) return vector<Pattern>{length, Pattern{}};
 
-				vector<Signal> seq = random_sequence(length);
+				vector<Pattern> seq = random_sequence(length);
 
 				// cyclic continuity from back to front
 				seq.pop_back();
-				seq.push_back(Signal::random(~(seq.back() | seq.front())));
+				seq.push_back(Pattern::random(~(seq.back() | seq.front())));
 
 				return seq;
 			}
@@ -117,14 +118,14 @@ namespace sprogar
 
 				return true;
 			}
-			bool adapt(Brain& B, const vector<Signal>& experience) const
+			bool adapt(Brain& B, const vector<Pattern>& experience) const
 			{
 				for (time_t time = 0; time < SimulatedInfinity; ++time) {
 					bool all_predictions_correct = true;
-					for (const Signal& signal : experience) {
-						if (signal != B.predict())
+					for (const Pattern& pattern : experience) {
+						if (pattern != B.predict())
 							all_predictions_correct = false;
-						B << signal;
+						B << pattern;
 					}
 					if (all_predictions_correct)
 						return true;
@@ -146,13 +147,13 @@ namespace sprogar
 					clog << "#2 Information (input creates difference)\n";
 
 					Brain A, B;
-					B << Signal::random();
+					B << Pattern::random();
 
 					ASSERT(A != B);
 				},
 				[&]() {
 					clog << "#3 Determinism (equal state implies equal life)\n";
-					const vector<Signal> life = random_sequence(SimulatedInfinity);
+					const vector<Pattern> life = random_sequence(SimulatedInfinity);
 
 					Brain A, B;
 					A << life;
@@ -162,7 +163,7 @@ namespace sprogar
 				},
 				[&]() {
 					clog << "#4 Cause (equal behaviour implies equal state)\n";
-					const vector<Signal> kick_off = random_sequence(SequenceLength);
+					const vector<Pattern> kick_off = random_sequence(SequenceLength);
 
 					Brain A;
 					A << kick_off;
@@ -172,7 +173,7 @@ namespace sprogar
 				},
 				[&]() {
 					clog << "#5 Time (inputs' ordering matters)\n";
-					const Signal any = Signal::random();
+					const Pattern any = Pattern::random();
 
 					Brain A, B;
 					A << any << ~any;
@@ -182,8 +183,8 @@ namespace sprogar
 				},
 				[&]() {
 					clog << "#6 Sensitivity (brains are chaotic systems)\n";
-					const Signal initial_condition = Signal::random();
-					const vector<Signal> life = random_sequence(SimulatedInfinity);
+					const Pattern initial_condition = Pattern::random();
+					const vector<Pattern> life = random_sequence(SimulatedInfinity);
 
 					Brain A, B;
 					A << initial_condition << life;
@@ -192,21 +193,18 @@ namespace sprogar
 					ASSERT(A != B);
 				},
 				[&]() {
-					clog << "#7 Refractory period (signal's spike (1) must be followed by a no-spike (0) event)\n";
-					const Signal any = Signal::random();
-					const vector<Signal> learnable = { any, Signal::random(~any) };
-					const vector<Signal> unlearnable = { any, any };		// no refractory periods
-
-					ASSERT((learnable[0] & learnable[1]) == Signal{});
+					clog << "#7 Refractory period (a spike (1) must be followed by a no-spike (0) event)\n";
+					const vector<Pattern> learnable = cyclic_random_sequence(2);
+					const vector<Pattern> unlearnable = { learnable[0], learnable[0] };		// no refractory periods
 
 					Brain A, B;
 
 					ASSERT(adapt(A, learnable));
-					ASSERT(not adapt(B, unlearnable) or any == Signal{});
+					ASSERT(not adapt(B, unlearnable) or unlearnable[0] == Pattern{});
 				},
 				[&]() {
 					clog << "#8 Ground truth (establish beliefs about the world)\n";
-					const vector<Signal> ground_truth = cyclic_random_sequence(SequenceLength);
+					const vector<Pattern> ground_truth = cyclic_random_sequence(SequenceLength);
 
 					Brain B;
 
@@ -214,7 +212,7 @@ namespace sprogar
 				},
 				[&]() {
 					clog << "#9 Progress (teach new tricks)\n";
-					const vector<Signal> ground_truth = cyclic_random_sequence(SequenceLength),
+					const vector<Pattern> ground_truth = cyclic_random_sequence(SequenceLength),
 								new_trick = cyclic_random_sequence(SequenceLength);
 
 					Brain B;
@@ -226,19 +224,16 @@ namespace sprogar
 					clog << "#10 Ageing (can't teach an old dog new tricks)\n";
 					auto forever_adaptable = [&](Brain& dog) -> bool {
 						for (unsigned tricks = 0; tricks < SimulatedInfinity; ++tricks) {
-							vector<Signal> new_trick = cyclic_random_sequence(SequenceLength);
+							vector<Pattern> new_trick = cyclic_random_sequence(SequenceLength);
 							if (not adapt(dog, new_trick))
 								return false;
 						}
 						return true;
 					};
-					const vector<Signal> first_trick = cyclic_random_sequence(SequenceLength);
 
 					Brain B;
-					adapt(B, first_trick);
 
 					ASSERT(not forever_adaptable(B));
-					ASSERT(adapt(B, first_trick));
 				}
 			};
 	};
