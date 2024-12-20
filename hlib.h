@@ -140,9 +140,9 @@ namespace sprogar
 
 					Brain A, B;
 
-					ASSERT(A == B);															// fixed internal state
-					//	ASSERT(A.predict() == Pattern{} or A.predict() != Pattern{});		// unspecified external behaviour
-					//	ASSERT(A.predict() == B.predict() or A.predict() != B.predict();
+					ASSERT(A == B);								// fixed internal state
+					// ASSERT(A.predict() == Pattern{} or A.predict() != Pattern{});	// unspecified external behaviour
+					// ASSERT(A.predict() == B.predict() or A.predict() != B.predict();
 				},
 				[&]() {
 					clog << "#2 Information (input creates bias)\n";
