@@ -77,8 +77,7 @@ namespace sprogar
 				clog << endl << "\033[92mPASS\033[0m" << endl;
 			}
 
-		//private:
-		public:
+		private:
 			using time_t = size_t;
 
 			static vector<Pattern> random_sequence(time_t length)
@@ -123,7 +122,7 @@ namespace sprogar
 				for (time_t time = 0; time < SimulatedInfinity; ++time) {
 					bool all_predictions_correct = true;
 					for (const Pattern& pattern : experience) {
-						if (pattern != B.predict())
+						if (all_predictions_correct and pattern != B.predict())
 							all_predictions_correct = false;
 						B << pattern;
 					}
@@ -137,14 +136,16 @@ namespace sprogar
 			const vector<std::function<void()>> tests =
 			{
 				[&]() {
-					clog << "#1 Default (equal initial states)\n";
+					clog << "#1 Internals (no bias)\n";
 
 					Brain A, B;
 
-					ASSERT(A == B);
+					ASSERT(A == B);															// fixed internal state
+					//	ASSERT(A.predict() == Pattern{} or A.predict() != Pattern{});		// unspecified external behaviour
+					//	ASSERT(A.predict() == B.predict() or A.predict() != B.predict();
 				},
 				[&]() {
-					clog << "#2 Information (input creates difference)\n";
+					clog << "#2 Information (input creates bias)\n";
 
 					Brain A, B;
 					B << Pattern::random();
@@ -169,7 +170,7 @@ namespace sprogar
 					A << kick_off;
 					Brain B = A;
 
-					ASSERT(equal_behaviour(A, B));   // ASSERT(behaviour(A) == behaviour(B));
+					ASSERT(equal_behaviour(A, B));
 				},
 				[&]() {
 					clog << "#5 Time (inputs' ordering matters)\n";
@@ -182,7 +183,7 @@ namespace sprogar
 					ASSERT(A != B);
 				},
 				[&]() {
-					clog << "#6 Sensitivity (brains are chaotic systems)\n";
+					clog << "#6 Sensitivity (brains are chaotic systems, sensitive to the initial condition)\n";
 					const Pattern initial_condition = Pattern::random();
 					const vector<Pattern> life = random_sequence(SimulatedInfinity);
 
