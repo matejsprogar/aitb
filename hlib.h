@@ -59,9 +59,8 @@ inline namespace benchmark {
 
 
     template <typename Cortex, typename Pattern>
-    requires std::regular<Cortex>and std::regular<Pattern>
-        and brainable<Cortex, Pattern>and processable<Pattern>
-        class Human_like_intelligence_benchmark
+        requires std::regular<Cortex> && std::regular<Pattern> && brainable<Cortex, Pattern> && processable<Pattern>
+    class Human_like_intelligence_benchmark
     {
     public:
         Human_like_intelligence_benchmark(unsigned sequence_length = 3, unsigned simulated_infinity = 500) :
