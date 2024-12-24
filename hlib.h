@@ -26,8 +26,7 @@
 	<< __FILE__ << "\nLine " << __LINE__ << ": " << #expression << std::endl, exit(-1), 0))
 
 
-namespace sprogar
-{
+namespace sprogar {
 inline namespace benchmark {
     using namespace std;
 
@@ -52,7 +51,7 @@ inline namespace benchmark {
         { Pattern::random() } -> convertible_to<Pattern>;
         { Pattern::random(p) } -> convertible_to<Pattern>;
         { ~p } -> convertible_to<Pattern>;
-        { p& p } -> convertible_to<Pattern>;
+        { p & p } -> convertible_to<Pattern>;
         { p | p } -> convertible_to<Pattern>;
         // axiom(Pattern mask) { Pattern::random(Pattern{}) == Pattern{}; (Pattern::random(mask) & ~mask) == Pattern{}; }
         // axiom(const Pattern p, const Pattern r) { p == p; ~~p == p; (p & p) == p; (p & r) == (r & p); (p & Pattern{}) == Pattern{}; (p | Pattern{}) == p; }
