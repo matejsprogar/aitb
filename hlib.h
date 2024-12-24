@@ -158,7 +158,7 @@ inline namespace benchmark {
                 ASSERT(A == B);
             },
             [&]() {
-                clog << "#4 Cause (equal behaviour implies equal state)\n";
+                clog << "#4 Substitutability (equal behaviour implies equal state)\n";
                 const vector<Pattern> kick_off = random_sequence(SequenceLength);
 
                 Cortex A;
