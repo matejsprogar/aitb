@@ -1,16 +1,16 @@
 /*
  * Copyright 2024 Matej Sprogar <matej.sprogar@gmail.com>
  *
- * This file is part of HLIB - Human Like Intelligence Benchmark.
+ * This file is part of HLITB - Human Like Intelligence Testbed.
  *
- * HLIB is free software: you can redistribute it and/or modify
+ * HLITB is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR C PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
@@ -18,16 +18,20 @@
  * */
 #pragma once
 
-#include <functional>
 #include <iostream>
 #include <vector>
+#include <format>
 
-#define ASSERT(expression) (void)((!!(expression)) || (std::cerr << "\033[91mAssertion failed\033[0m\n" \
+#define ASSERT(expression) (void)((!!(expression)) || (std::cerr << red("Assertion failed") \
 	<< __FILE__ << "\nLine " << __LINE__ << ": " << #expression << std::endl, exit(-1), 0))
 
 
+inline std::string red(std::string msg) { return std::format("\033[91m{}\033[0m", msg); }
+inline std::string green(std::string msg) { return std::format("\033[92m{}\033[0m", msg); }
+
+
 namespace sprogar {
-    inline namespace benchmark {
+    inline namespace human_like_intelligence {
         using namespace std;
 
         template <typename T, ranges::range Range>
@@ -38,7 +42,7 @@ namespace sprogar {
         }
 
         template <typename Cortex, typename Pattern>
-        concept brainable = requires(Cortex cortex)
+        concept PatternProcessor = requires(Cortex cortex)
         {
             { cortex << Pattern{} } -> convertible_to<Cortex&>;
             { cortex.predict() } -> convertible_to<Pattern>;
@@ -46,39 +50,35 @@ namespace sprogar {
         };
 
         template <typename Pattern>
-        concept processable = requires(const Pattern p)
+        concept PatternManipulations = requires(const Pattern p)
         {
             { Pattern::random() } -> convertible_to<Pattern>;
             { Pattern::random(p) } -> convertible_to<Pattern>;
             { ~p } -> convertible_to<Pattern>;
-            { p& p } -> convertible_to<Pattern>;
+            { p & p } -> convertible_to<Pattern>;
             { p | p } -> convertible_to<Pattern>;
             // axiom(Pattern mask) { Pattern::random(Pattern{}) == Pattern{}; (Pattern::random(mask) & ~mask) == Pattern{}; }
             // axiom(const Pattern p, const Pattern r) { p == p; ~~p == p; (p & p) == p; (p & r) == (r & p); (p & Pattern{}) == Pattern{}; (p | Pattern{}) == p; }
         };
 
 
-        template <typename Cortex, typename Pattern>
-            requires std::regular<Cortex>&& std::regular<Pattern>&& brainable<Cortex, Pattern>&& processable<Pattern>
-        class Human_like_intelligence_benchmark
+        template <typename Cortex, typename Pattern, unsigned SimulatedInfinity = 500>
+            requires std::regular<Cortex> && std::regular<Pattern> && PatternProcessor<Cortex, Pattern> && PatternManipulations<Pattern>
+        class Testbed
         {
         public:
-            Human_like_intelligence_benchmark(unsigned sequence_length = 3, unsigned simulated_infinity = 500) :
-                SequenceLength(sequence_length), SimulatedInfinity(simulated_infinity)
+            static void verify(unsigned temporal_sequence_length = 3)
             {
-            }
-            void run()
-            {
-                for (auto test : tests)
-                    test();
+                for (auto presumption : testbed)
+                    presumption(temporal_sequence_length);
 
-                clog << endl << "\033[92mPASS\033[0m" << endl;
+                clog << green("PASS") << endl << endl;
             }
 
         private:
             using time_t = size_t;
 
-            static vector<Pattern> random_sequence(time_t length)
+            static vector<Pattern> random_temporal_sequence(time_t length)
             {
                 if (length == 0) return vector<Pattern>{};
 
@@ -87,140 +87,154 @@ namespace sprogar {
 
                 seq.push_back(Pattern::random());
                 while (seq.size() < length)
-                    seq.push_back(Pattern::random(~seq.back()));                // see test #7
+                    seq.push_back(Pattern::random(~seq.back()));                // see presumption #7
 
                 return seq;
             }
-            static vector<Pattern> learnable_random_sequence(time_t length)
+            static vector<Pattern> circular_random_temporal_sequence(time_t duration)
             {
-                if (length <= 1) return vector<Pattern>{length, Pattern{}};
+                if (duration <= 1) return vector<Pattern>{duration, Pattern{}};
 
-                vector<Pattern> seq = random_sequence(length);
+                vector<Pattern> seq = random_temporal_sequence(duration);
 
                 seq.pop_back();
-                seq.push_back(Pattern::random(~(seq.back() | seq.front())));    // circular refractory periods; #7
+                seq.push_back(Pattern::random(~(seq.back() | seq.front())));    // circular stream; #7
 
                 return seq;
             }
-            bool equal_behaviour(Cortex& A, Cortex& B) const
+            static vector<Pattern> behaviour(Cortex& C, time_t length)
             {
-                for (time_t time = 0; time < SimulatedInfinity; ++time) {
-                    const auto prediction = A.predict();
-                    if (prediction != B.predict())
-                        return false;
-                    A << prediction;
-                    B << prediction;
+                vector<Pattern> predictions;
+                predictions.reserve(length);
+
+                while (predictions.size() < length) {
+                    predictions.push_back(C.predict());
+                    C << predictions.back();
                 }
 
-                return true;
+                return predictions;
             }
-            bool adapt(Cortex& B, const vector<Pattern>& experience) const
+            static vector<Pattern> predict(Cortex& C, const vector<Pattern>& inputs)
+            {
+                vector<Pattern> predictions;
+                predictions.reserve(inputs.size());
+
+                for (const Pattern& in : inputs) {
+                    predictions.push_back(C.predict());
+                    C << in;
+                }
+
+                return predictions;
+            }
+            static bool adapt(Cortex& C, const vector<Pattern>& experience)
             {
                 for (time_t time = 0; time < SimulatedInfinity; ++time) {
-                    bool all_predictions_correct = true;
-                    for (const Pattern& pattern : experience) {
-                        if (all_predictions_correct and pattern != B.predict())
-                            all_predictions_correct = false;
-                        B << pattern;
-                    }
-                    if (all_predictions_correct)
+                    if (predict(C, experience) == experience)
                         return true;
                 }
                 return false;
             }
 
-            const unsigned SequenceLength, SimulatedInfinity;
-            const vector<std::function<void()>> tests =
+            static inline const vector<void (*)(unsigned)> testbed =
             {
-                [&]() {
-                    clog << "#1 Start (no bias)\n";
+                [](unsigned) {
+                    clog << "#1 Knowledgeless start (no bias)\n";
 
-                    Cortex A, B;
+                    Cortex C;
 
-                    ASSERT(A == B);
+                    ASSERT(C == Cortex{});
+                    ASSERT(C.predict() == Pattern{});
                 },
-                [&]() {
+                [](unsigned) {
                     clog << "#2 Information (input creates bias)\n";
 
-                    Cortex A, B;
-                    B << Pattern::random();
+                    Cortex C;
+                    C << Pattern::random();
 
-                    ASSERT(A != B);
+                    ASSERT(C != Cortex{});
                 },
-                [&]() {
+                [](unsigned) {
                     clog << "#3 Determinism (equal state implies equal life)\n";
-                    const vector<Pattern> life = random_sequence(SimulatedInfinity);
+                    const vector<Pattern> life = random_temporal_sequence(SimulatedInfinity);
 
-                    Cortex A, B;
-                    A << life;
-                    B << life;
+                    Cortex C, D;
+                    C << life;
+                    D << life;
 
-                    ASSERT(A == B);
+                    ASSERT(C == D);
                 },
-                [&]() {
+                [](unsigned temporal_sequence_length) {
                     clog << "#4 Substitutability (equal behaviour implies equal state)\n";
-                    const vector<Pattern> kick_off = random_sequence(SequenceLength);
+                    const vector<Pattern> kick_off = random_temporal_sequence(temporal_sequence_length);
 
-                    Cortex A;
-                    A << kick_off;
-                    Cortex B = A;
+                    Cortex C;
+                    C << kick_off;
+                    Cortex D = C;
 
-                    ASSERT(equal_behaviour(A, B));
+                    ASSERT(behaviour(C, SimulatedInfinity) == behaviour(D, SimulatedInfinity));
                 },
-                [&]() {
+                [](unsigned) {
                     clog << "#5 Time (the ordering of inputs matters)\n";
                     const Pattern any = Pattern::random();
 
-                    Cortex A, B;
-                    A << any << ~any;
-                    B << ~any << any;
+                    Cortex C, D;
+                    C << any << ~any;
+                    D << ~any << any;
 
-                    ASSERT(A != B);
+                    ASSERT(C != D);
                 },
-                [&]() {
+                [](unsigned) {
                     clog << "#6 Sensitivity (brains are chaotic systems, sensitive to initial conditions)\n";
                     const Pattern initial_condition = Pattern::random();
-                    const vector<Pattern> life = random_sequence(SimulatedInfinity);
+                    const vector<Pattern> life = random_temporal_sequence(SimulatedInfinity);
 
-                    Cortex A, B;
-                    A << initial_condition << life;
-                    B << ~initial_condition << life;
+                    Cortex C, D;
+                    C << initial_condition << life;
+                    D << ~initial_condition << life;
 
-                    ASSERT(A != B);
+                    ASSERT(C != D);
                 },
-                [&]() {
+                [](unsigned) {
                     clog << "#7 Refractory period (every spike (1) must be followed by a no-spike (0) event)\n";
-                    const vector<Pattern> learnable = learnable_random_sequence(2);
+                    const vector<Pattern> learnable = circular_random_temporal_sequence(2);
                     const vector<Pattern> unlearnable = { learnable[0], learnable[0] };		// no refractory periods
 
-                    Cortex A, B;
+                    Cortex C, D;
 
-                    ASSERT(adapt(A, learnable));
-                    ASSERT(not adapt(B, unlearnable) or unlearnable[0] == Pattern{});
+                    ASSERT(adapt(C, learnable));
+                    ASSERT(not adapt(D, unlearnable) or unlearnable[0] == Pattern{});
                 },
-                [&]() {
+                [](unsigned temporal_sequence_length) {
                     clog << "#8 Ground truth (develop and establish beliefs about the world)\n";
-                    const vector<Pattern> ground_truth = learnable_random_sequence(SequenceLength);
+                    const vector<Pattern> ground_truth = circular_random_temporal_sequence(temporal_sequence_length);
 
                     Cortex C;
 
                     ASSERT(adapt(C, ground_truth));
                 },
-                [&]() {
-                    clog << "#9 Progress (learn new tricks)\n";
-                    const vector<Pattern> ground_truth = learnable_random_sequence(SequenceLength),
-                                            new_trick = learnable_random_sequence(SequenceLength);
+                [](unsigned temporal_sequence_length) {
+                    clog << "#9 Continual learning (learn new tricks)\n";
+                    auto can_learn_additional_tricks = [&](Cortex& C) -> bool {
+                        for (time_t tm{}; tm < SimulatedInfinity; ++tm) {
+                            Cortex CC = C;
+                            const vector<Pattern> new_trick = circular_random_temporal_sequence(temporal_sequence_length);
+                            if (adapt(CC, new_trick))
+                                return true;
+                        }
+                        return false;
+                    };
+                    const vector<Pattern> ground_truth = circular_random_temporal_sequence(temporal_sequence_length);
 
                     Cortex C;
                     adapt(C, ground_truth);
 
-                    ASSERT(adapt(C, new_trick));
+                    ASSERT(can_learn_additional_tricks(C));
                 },
-                [&]() {
+                [](unsigned temporal_sequence_length) {
                     clog << "#10 Ageing (you can't teach an old dog new tricks)\n";
                     auto forever_adaptable = [&](Cortex& dog) -> bool {
                         for (unsigned tricks = 0; tricks < SimulatedInfinity; ++tricks) {
-                            vector<Pattern> new_trick = learnable_random_sequence(SequenceLength);
+                            vector<Pattern> new_trick = circular_random_temporal_sequence(temporal_sequence_length);
                             if (not adapt(dog, new_trick))
                                 return false;
                         }
