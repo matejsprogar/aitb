@@ -56,14 +56,15 @@ Trenutno so vsi testi v C++, so pa izjemno preprosti in v toliko verjamem, da ne
 <h4>Primer glavnega programa</h4>
 <p>
 <pre>
-#include "hlib.h"<br/>
+#include "hlitb.h"<br/>
 class MojSignal {...};<br/>
 class MojBrain {...};<br/>
 
 int main()
 {
-&nbsp;&nbsp;&nbsp;&nbsp;sprogar::Human_like_intelligence_benchmark&lt;MojBrain, MojSignal&gt; hlib;
-&nbsp;&nbsp;&nbsp;&nbsp;hlib.run();
+&nbsp;&nbsp;&nbsp;&nbsp;using Testbed = sprogar::Testbed&lt;MojBrain, MojSignal, 500/\*SimulatedInfinity\*/&gt;;
+&nbsp;&nbsp;&nbsp;&nbsp;Testbed::verify(3/\*temporal_sequence_length\*/);
+&nbsp;&nbsp;&nbsp;&nbsp;Testbed::verify(4/\*temporal_sequence_length\*/);
 &nbsp;&nbsp;&nbsp;&nbsp;return 0;
 }
 </pre>
