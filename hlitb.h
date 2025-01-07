@@ -19,6 +19,8 @@
 #pragma once
 
 #include <iostream>
+#include <sstream>
+#include <set>
 #include <vector>
 #include <format>
 
@@ -26,8 +28,8 @@
 	<< __FILE__ << "\nLine " << __LINE__ << ": " << #expression << std::endl, exit(-1), 0))
 
 
-inline std::string red(std::string msg) { return std::format("\033[91m{}\033[0m", msg); }
-inline std::string green(std::string msg) { return std::format("\033[92m{}\033[0m", msg); }
+inline std::string red(std::string_view msg) { return std::format("\033[91m{}\033[0m", msg); }
+inline std::string green(std::string_view msg) { return std::format("\033[92m{}\033[0m", msg); }
 
 
 namespace sprogar {
@@ -67,10 +69,12 @@ namespace sprogar {
         class Testbed
         {
         public:
-            static void verify(unsigned temporal_sequence_length = 3)
+            static void verify(unsigned temporal_sequence_length)
             {
-                for (auto presumption : testbed)
-                    presumption(temporal_sequence_length);
+                assert(temporal_sequence_length > 1);
+
+                for (auto test : testbed)
+                    test(temporal_sequence_length);
 
                 clog << green("PASS") << endl << endl;
             }
@@ -91,11 +95,11 @@ namespace sprogar {
 
                 return seq;
             }
-            static vector<Pattern> circular_random_temporal_sequence(time_t duration)
+            static vector<Pattern> circular_random_temporal_sequence(time_t circle_length)
             {
-                if (duration <= 1) return vector<Pattern>{duration, Pattern{}};
+                if (circle_length <= 1) return vector<Pattern>{circle_length, Pattern{}};
 
-                vector<Pattern> seq = random_temporal_sequence(duration);
+                vector<Pattern> seq = random_temporal_sequence(circle_length);
 
                 seq.pop_back();
                 seq.push_back(Pattern::random(~(seq.back() | seq.front())));    // circular stream; #7
@@ -205,7 +209,7 @@ namespace sprogar {
                     ASSERT(not adapt(D, unlearnable) or unlearnable[0] == Pattern{});
                 },
                 [](unsigned temporal_sequence_length) {
-                    clog << "#8 Ground truth (develop and establish beliefs about the world)\n";
+                    clog << "#8 Ground truth (handle varying beliefs about the world)\n";
                     const vector<Pattern> ground_truth = circular_random_temporal_sequence(temporal_sequence_length);
 
                     Cortex C;
@@ -213,11 +217,11 @@ namespace sprogar {
                     ASSERT(adapt(C, ground_truth));
                 },
                 [](unsigned temporal_sequence_length) {
-                    clog << "#9 Continual learning (learn new tricks)\n";
-                    auto can_learn_additional_tricks = [&](Cortex& C) -> bool {
+                    clog << "#9 Adaptability (can adapt to sequences of different lengths)\n";
+                    auto can_learn_additional_tricks = [&](const Cortex& C) -> bool {
                         for (time_t tm{}; tm < SimulatedInfinity; ++tm) {
                             Cortex CC = C;
-                            const vector<Pattern> new_trick = circular_random_temporal_sequence(temporal_sequence_length);
+                            const vector<Pattern> new_trick = circular_random_temporal_sequence(2 * temporal_sequence_length);
                             if (adapt(CC, new_trick))
                                 return true;
                         }
@@ -233,7 +237,7 @@ namespace sprogar {
                 [](unsigned temporal_sequence_length) {
                     clog << "#10 Ageing (you can't teach an old dog new tricks)\n";
                     auto forever_adaptable = [&](Cortex& dog) -> bool {
-                        for (unsigned tricks = 0; tricks < SimulatedInfinity; ++tricks) {
+                        for (time_t tm{}; tm < SimulatedInfinity; ++tm) {
                             vector<Pattern> new_trick = circular_random_temporal_sequence(temporal_sequence_length);
                             if (not adapt(dog, new_trick))
                                 return false;
