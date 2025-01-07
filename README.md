@@ -9,7 +9,7 @@ Projekt HLITB vključuje 10 domnevno potrebnih pogojev za inteligenco. Verjamem,
 
 
 ## Cilj
-Izdelati nevronsko mrežo (_class Brain_), ki na vhodu sprejme vhodni signal (_class Signal_) in na izhodu uspešno napove *naslednji* vhodni signal. Sposobnost napovedovanja prihodnosti je dosežena z zaznavo krajših (_temporal_sequence_length_) cikličnih serij vhodnih vzorcev.
+Izdelati nevronsko mrežo (_class Brain_), ki na vhodu sprejme vhodni signal (_class Signal_) in na izhodu uspešno napove *naslednji* vhodni signal. Sposobnost napovedovanja prihodnosti je dokazana z zaznavo krajših (_temporal_sequence_length_) cikličnih serij vhodnih vzorcev.
 
 ## API
 Vsak signal sestoji iz več bitov (na primer 6 bitov v 2x3 matriki), ki predstavljajo senzorične vhode; pomen bitov ni pomemben, število bitov je poljubno, a predefinirano v okviru razreda _Signal_. Razred _Signal_ mora omogočati kreacijo naključnih signalov s pomočjo dveh statičnih _random_ funkcij:
