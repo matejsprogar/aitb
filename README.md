@@ -9,15 +9,15 @@ Projekt HLITB vključuje 10 domnevno potrebnih pogojev za inteligenco. Verjamem,
 
 
 ## Cilj
-Izdelati nevronsko mrežo (_class Brain_), ki na vhodu sprejme vhodni signal (_class Signal_) in na izhodu uspešno napove *naslednji* vhodni signal. Sposobnost napovedovanja prihodnosti je preverjana s pravilnim napovedovanjem zaporedij vhodnih vzorcev, **ista** mreža pa mora biti sposobna napovedati različno dolge vhodne sekvence (_temporal_sequence_length_).
+Izdelati nevronsko mrežo (_class Brain_), ki na vhodu sprejme vhodni vzorec (_class Signal_) in na izhodu uspešno napove *naslednji* vhodni vzorec. Sposobnost napovedovanja prihodnosti je preverjana s pravilnim napovedovanjem zaporedij vhodnih vzorcev, **ista** mreža pa mora biti sposobna napovedati tudi različno dolge vhodne sekvence (_temporal_sequence_length_).
 
 ## API
-Vsak signal sestoji iz več bitov (na primer 6 bitov v 2x3 matriki), ki predstavljajo senzorične vhode; pomen bitov ni pomemben, število bitov je poljubno, a predefinirano v okviru razreda _Signal_. Razred _Signal_ mora omogočati kreacijo naključnih signalov s pomočjo dveh statičnih _random_ funkcij:
+Vsak vzorec sestoji iz več bitov (na primer 6 bitov v 2x3 matriki), ki predstavljajo senzorične vhode; pomen bitov ni pomemben, število bitov je poljubno, a predefinirano v okviru razreda _Signal_. Razred _Signal_ mora omogočati kreacijo naključnih signalov s pomočjo dveh statičnih _random_ funkcij:
 
 1. _Signal::random()_ vrne objekt, kjer so vsi biti naključno postavljeni; in
-2. _Signal::random(Signal mask)_ vrne objekt z naključno postavljenimi zgolj tistimi biti, ki so postavljeni tudi že v maski, ostali bodo 0.
+2. _Signal::random(Vzorec mask)_ vrne objekt z naključno postavljenimi zgolj tistimi biti, ki so postavljeni tudi že v maski, ostali bodo 0.
 
-Dodatno mora razred Signal omogočati osnovne bitne manipulacije (binarna operatorja | in & ter unarni komplement ~) ter kopiranje in primerjavo.
+Dodatno mora razred Vzorec omogočati osnovne bitne manipulacije (binarna operatorja | in & ter unarni komplement ~) ter kopiranje in primerjavo.
 
 ### Predpostavka
 Počitek nevrona po proženju (_"refractory period"_) ni zgolj fiziološka, ampak tudi informacijska nujnost. Zahteva #7 določa, da se vsak prožen bit takoj resetira, kar simulira refractory fazo v delovanju nevrona (glej _Human_like_intelligence_benchmark::random_sequence()_).
@@ -53,7 +53,6 @@ class MojBrain {...};<br/>
 int main()
 {
 	using Testbed = sprogar::Testbed&lt;MojBrain, MojSignal, 500/*SimulatedInfinity*/&gt;;
-	Testbed::verify(3 /*temporal_sequence_length*/);
 	Testbed::verify(4 /*temporal_sequence_length*/);
 	return 0;
 }
