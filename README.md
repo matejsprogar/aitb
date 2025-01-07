@@ -1,4 +1,4 @@
-<h1>HLIB - Human-Like Intelligence Benchmark</h1>
+<h1>HLITB - Human-Like Intelligence Testbed</h1>
 
 <h4>HIPOTEZA:</h4>
 <p>
@@ -9,7 +9,7 @@
 GPT je sicer sposoben rešiti Turingov test, hkrati pa dela še preveč neumnosti, da bi lahko obveljal kot dokončna rešitev problema računske inteligence. Da bi vedeli, ali nam je uspelo oziroma ali smo sploh na pravi poti, rabimo novo metriko. 
 </p>
 <p>
-Projekt HLIB vključuje 10 domnevno potrebnih pogojev za inteligenco. Verjamem, da jim je mogoče zadostiti tudi s klasičnim programiranjem, vendar nas zgodovina uči, da je to slepa ulica; zanima me, ali zmore kdo ustvariti nevronsko mrežo, ki reši HLIB teste?
+Projekt HLITB vključuje 10 domnevno potrebnih pogojev za inteligenco. Verjamem, da jim je mogoče zadostiti tudi s klasičnim programiranjem, vendar nas zgodovina uči, da je to slepa ulica; zanima me, ali zmore kdo ustvariti nevronsko mrežo, ki reši HLITB teste?
 </p>
 
 <h4>Cilj</h4>
