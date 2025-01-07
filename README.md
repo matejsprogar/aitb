@@ -1,72 +1,64 @@
-<h1>HLITB - Human-Like Intelligence Testbed</h1>
+# HLITB - Human-Like Intelligence Testbed
 
-<h4>HIPOTEZA:</h4>
-<p>
-  <em>Preživeti Turingov test lahko nadomestimo z naborom kratkih testov.</em>
-</p>
+#### HIPOTEZA:
+  _Preživeti Turingov test lahko nadomestimo z naborom kratkih testov._
 
-<p>
 GPT je sicer sposoben rešiti Turingov test, hkrati pa dela še preveč neumnosti, da bi lahko obveljal kot dokončna rešitev problema računske inteligence. Da bi vedeli, ali nam je uspelo oziroma ali smo sploh na pravi poti, rabimo novo metriko. 
-</p>
-<p>
-Projekt HLITB vključuje 10 domnevno potrebnih pogojev za inteligenco. Verjamem, da jim je mogoče zadostiti tudi s klasičnim programiranjem, vendar nas zgodovina uči, da je to slepa ulica; zanima me, ali zmore kdo ustvariti nevronsko mrežo, ki reši HLITB teste?
-</p>
 
-<h4>Cilj</h4>
-<p>
-Izdelati nevronsko mrežo (<em>class MojBrain</em>), ki ima dve enostavni funkcionalnosti:
-</p>
-  <ol>
-<li>sprejme lahko vhodni signal (<em>class MojSignal</em>); in</li>
-<li>napove lahko naslednji signal.</li>
-  </ol>
-<p>
-Vsak signal sestoji iz več bitov (na primer 6 bitov v 2x3 matriki), ki predstavljajo senzorične vhode; pomen bitov ni pomemben, število bitov je poljubno. Razred Signal mora omogočati kreacijo naključnih signalov s pomočjo dveh statičnih <em>random</em> funkcij:
-  </p>
-  <ol type="a">
-<li><em>Signal::random()</em> vrne objekt, kjer so vsi biti naključno postavljeni; in</li>
-<li><em>Signal::random(Signal mask)</em> vrne objekt z naključno postavljenimi zgolj tistimi biti, ki so postavljeni tudi že v maski, ostali bodo 0.</li>
-  </ol>
-<p>
-Dodatno mora razred Signal omogočati osnovne bitne manipulacije (binarna operatorja | in & ter unarni komplement ~) ter kopiranje in primerjavo. HLIB testi generirajo kratka (<em>SequenceLength=3</em>) zaporedja naključnih signalov, ki imajo vedno neke odvisnosti.</p>
-<p>
-  Predpostavka je, da počitek nevrona po proženju ("neuron refractory period") ni zgolj fiziološka nujnost, ampak tudi informacijska nujnost, zato test #7. Hkrati so vse časovne sekvence signalov kreirane s tem v mislih (<em>Human_like_intelligence_benchmark::random_sequence()</em>).
-</p>
+Projekt HLITB vključuje 10 domnevno potrebnih pogojev za inteligenco. Verjamem, da jim lahko zadosti tudi klasičen imperativni program, vendar nas zgodovina uči, da je to slepa ulica; zanima me, ali zmore kdo ustvariti nevronsko mrežo, ki reši HLITB teste?
 
-<h4>Koncepti</h4>
 
-<p>Če nimaš C++20 prevajalnika, HLIB pričakuje naslednje funkcionalnosti v tvojih razredih <em>MojBrain</em> in <em>MojSignal</em>:</p>
+## Cilj
+Izdelati nevronsko mrežo (_class Brain_), ki na vhodu sprejme vhodni signal (_class Signal_) in na izhodu uspešno napove *naslednji* vhodni signal. Sposobnost napovedovanja prihodnosti je dosežena z zaznavo krajših (_temporal_sequence_length_) cikličnih serij vhodnih vzorcev.
+
+## API
+Vsak signal sestoji iz več bitov (na primer 6 bitov v 2x3 matriki), ki predstavljajo senzorične vhode; pomen bitov ni pomemben, število bitov je poljubno, a predefinirano v okviru razreda _Signal_. Razred _Signal_ mora omogočati kreacijo naključnih signalov s pomočjo dveh statičnih _random_ funkcij:
+
+1. _Signal::random()_ vrne objekt, kjer so vsi biti naključno postavljeni; in
+2. _Signal::random(Signal mask)_ vrne objekt z naključno postavljenimi zgolj tistimi biti, ki so postavljeni tudi že v maski, ostali bodo 0.
+
+Dodatno mora razred Signal omogočati osnovne bitne manipulacije (binarna operatorja | in & ter unarni komplement ~) ter kopiranje in primerjavo.
+
+### Predpostavka
+Počitek nevrona po proženju (_"refractory period"_) ni zgolj fiziološka, ampak tudi informacijska nujnost. Zahteva #7 določa, da se vsak prožen bit takoj resetira, kar simulira refractory fazo v delovanju nevrona (glej _Human_like_intelligence_benchmark::random_sequence()_).
+
+
+
+
+### Sintaksa
+
+Razreda _MojBrain_ in _MojSignal_ morata omogočati naslednjo kodo:
 <pre>
 MojBrain A, B = A;
 MojSignal prvi_vzorec = MojSignal::random(), drugi_vzorec = MojSignal::random(~prvi_vzorec);<br/>
-  
+&nbsp;
 bool enaki_mozgani = A == B;
 bool enak_signal = prvi_vzorec == drugi_vzorec;
 MojSignal novi_signal = prvi_vzorec | drugi_vzorec & prvi_vzorec;
 MojSignal prazen_signal = MojSignal{};
 MojSignal poln_signal = ~prazen_signal;<br/>
-
+&nbsp;
 A << prvi_vzorec << drugi_vzorec;
 MojSignal napoved = A.predict();
 </pre>
-<p>
-Trenutno so vsi testi v C++, so pa izjemno preprosti in v toliko verjamem, da ne bo težav pri njihovem razumevanju ter posledično prevajanju v jezik po tvoji izbiri. Če ne poznaš "modernega" C++ lahko ignoriraš "<em>concept</em>" in "<em>requires</em>" kodo.
-</p>
 
-<h4>Primer glavnega programa</h4>
-<p>
+Trenutno so vsi testi v C++, so pa izjemno preprosti in v toliko verjamem, da ne bo težav pri njihovem razumevanju ter posledično prevajanju v jezik po tvoji izbiri. Če ne poznaš "modernega" C++, lahko ignoriraš "_concept_" in "_requires_" kodo.
+
+
+## Primer glavnega programa
+
 <pre>
 #include "hlitb.h"<br/>
 class MojSignal {...};<br/>
 class MojBrain {...};<br/>
-
+...
 int main()
 {
-&nbsp;&nbsp;&nbsp;&nbsp;using Testbed = sprogar::Testbed&lt;MojBrain, MojSignal, 500/\*SimulatedInfinity\*/&gt;;
-&nbsp;&nbsp;&nbsp;&nbsp;Testbed::verify(3/\*temporal_sequence_length\*/);
-&nbsp;&nbsp;&nbsp;&nbsp;Testbed::verify(4/\*temporal_sequence_length\*/);
-&nbsp;&nbsp;&nbsp;&nbsp;return 0;
+	using Testbed = sprogar::Testbed&lt;MojBrain, MojSignal, 500\*SimulatedInfinity*/&gt;;
+	Testbed::verify(3/*temporal_sequence_length*/);
+	Testbed::verify(4/*temporal_sequence_length*/);
+	return 0;
 }
 </pre>
-</p>
+
 
