@@ -218,11 +218,11 @@ namespace sprogar {
                 },
                 [](unsigned temporal_sequence_length) {
                     clog << "#9 Universal (can predict a differently sized sequence)\n";
-                    auto can_adapt_to_a_longer_sequence = [&](const Cortex& C) -> bool {
+                    auto can_adapt_to_a_longer_truth = [&](const Cortex& C) -> bool {
                         for (time_t tm{}; tm < SimulatedInfinity; ++tm) {
                             Cortex CC = C;
-                            const vector<Pattern> a_longer_sequence = circular_random_temporal_sequence(2 * temporal_sequence_length);
-                            if (adapt(CC, a_longer_sequence))
+                            const vector<Pattern> longer_truth = circular_random_temporal_sequence(2 * temporal_sequence_length);
+                            if (adapt(CC, longer_truth))
                                 return true;
                         }
                         return false;
@@ -232,7 +232,7 @@ namespace sprogar {
                     Cortex C;
                     adapt(C, ground_truth);
 
-                    ASSERT(can_adapt_to_a_longer_sequence(C));
+                    ASSERT(can_adapt_to_a_longer_truth(C));
                 },
                 [](unsigned temporal_sequence_length) {
                     clog << "#10 Ageing (you can't teach an old dog new tricks)\n";
