@@ -217,7 +217,7 @@ namespace sprogar {
                     ASSERT(adapt(C, ground_truth));
                 },
                 [](unsigned temporal_sequence_length) {
-                    clog << "#9 Universal (can predict a differently sized sequence)\n";
+                    clog << "#9 Universality (can predict differently sized sequences)\n";
                     auto can_adapt_to_a_longer_truth = [&](const Cortex& C) -> bool {
                         for (time_t tm{}; tm < SimulatedInfinity; ++tm) {
                             Cortex CC = C;
