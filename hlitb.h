@@ -19,8 +19,7 @@
 #pragma once
 
 #include <iostream>
-#include <sstream>
-#include <set>
+#include <cassert>
 #include <vector>
 #include <format>
 
@@ -57,7 +56,7 @@ namespace sprogar {
             { Pattern::random() } -> convertible_to<Pattern>;
             { Pattern::random(p) } -> convertible_to<Pattern>;
             { ~p } -> convertible_to<Pattern>;
-            { p & p } -> convertible_to<Pattern>;
+            { p& p } -> convertible_to<Pattern>;
             { p | p } -> convertible_to<Pattern>;
             // axiom(Pattern mask) { Pattern::random(Pattern{}) == Pattern{}; (Pattern::random(mask) & ~mask) == Pattern{}; }
             // axiom(const Pattern p, const Pattern r) { p == p; ~~p == p; (p & p) == p; (p & r) == (r & p); (p & Pattern{}) == Pattern{}; (p | Pattern{}) == p; }
@@ -65,8 +64,8 @@ namespace sprogar {
 
 
         template <typename Cortex, typename Pattern, unsigned SimulatedInfinity = 500>
-            requires std::regular<Cortex> && std::regular<Pattern> && PatternProcessor<Cortex, Pattern> && PatternManipulations<Pattern>
-        class Testbed
+        requires std::regular<Cortex>&& std::regular<Pattern>&& PatternProcessor<Cortex, Pattern>&& PatternManipulations<Pattern>
+            class Testbed
         {
         public:
             static void verify(unsigned temporal_sequence_length)
@@ -217,22 +216,19 @@ namespace sprogar {
                     ASSERT(adapt(C, ground_truth));
                 },
                 [](unsigned temporal_sequence_length) {
-                    clog << "#9 Universality (can predict differently sized sequences)\n";
-                    auto can_adapt_to_a_longer_truth = [&](const Cortex& C) -> bool {
+                    clog << "#9 Universal (predict longer sequences)\n";
+                    auto learn_a_much_longer_truth = [&](const Cortex& C) -> bool {
                         for (time_t tm{}; tm < SimulatedInfinity; ++tm) {
                             Cortex CC = C;
-                            const vector<Pattern> longer_truth = circular_random_temporal_sequence(2 * temporal_sequence_length);
-                            if (adapt(CC, longer_truth))
+                            const vector<Pattern> longer_ground_truth = circular_random_temporal_sequence(2 * temporal_sequence_length);
+                            if (adapt(CC, longer_ground_truth))
                                 return true;
                         }
                         return false;
                     };
-                    const vector<Pattern> ground_truth = circular_random_temporal_sequence(temporal_sequence_length);
 
                     Cortex C;
-                    adapt(C, ground_truth);
-
-                    ASSERT(can_adapt_to_a_longer_truth(C));
+                    ASSERT(learn_a_much_longer_truth(C));
                 },
                 [](unsigned temporal_sequence_length) {
                     clog << "#10 Ageing (you can't teach an old dog new tricks)\n";
