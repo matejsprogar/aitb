@@ -81,6 +81,9 @@ namespace sprogar {
         private:
             using time_t = size_t;
 
+            /*
+            * #7: Temporal signals incorporate an absolute refractory period following each spike.
+            */
             static vector<Pattern> random_temporal_sequence(time_t length)
             {
                 if (length == 0) return vector<Pattern>{};
@@ -94,6 +97,9 @@ namespace sprogar {
 
                 return seq;
             }
+            /*
+            * Enables circular processing of the same sequence of patterns.
+            */
             static vector<Pattern> circular_random_temporal_sequence(time_t circle_length)
             {
                 if (circle_length <= 1) return vector<Pattern>{circle_length, Pattern{}};
