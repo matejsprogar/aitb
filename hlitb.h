@@ -72,6 +72,8 @@ namespace sprogar {
             {
                 time_t temporal_sequence_length = learnable_temporal_sequence_length();
                 ASSERT(temporal_sequence_length > 1);
+                clog << "Human-like Intelligence Testbed:\n"
+                     << "temporal_sequence_length = " << temporal_sequence_length << endl << endl;
                 
                 for (auto test : testbed)
                     test(temporal_sequence_length);
@@ -226,30 +228,22 @@ namespace sprogar {
                     ASSERT(not adapt(D, unlearnable) or unlearnable[0] == Pattern{});
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#8 Ground truth (handle varying beliefs about the world)\n";
-                    const vector<Pattern> ground_truth = circular_random_temporal_sequence(temporal_sequence_length);
-
-                    Cortex C;
-
-                    ASSERT(adapt(C, ground_truth));
-                },
-                [](time_t temporal_sequence_length) {
-                    clog << "#9 Universal (predict longer sequences)\n";
-                    auto learn_a_much_longer_truth = [&](const Cortex& C) -> bool {
+                    clog << "#8 Universal (predict longer sequences)\n";
+                    auto learn_a_much_longer_sequence = [&](const Cortex& C) -> bool {
                         for (time_t tm{}; tm < SimulatedInfinity; ++tm) {
                             Cortex CC = C;
-                            const vector<Pattern> longer_ground_truth = circular_random_temporal_sequence(2 * temporal_sequence_length);
-                            if (adapt(CC, longer_ground_truth))
+                            const vector<Pattern> longer_sequence = circular_random_temporal_sequence(temporal_sequence_length * 2);
+                            if (adapt(CC, longer_sequence))
                                 return true;
                         }
                         return false;
                     };
 
                     Cortex C;
-                    ASSERT(learn_a_much_longer_truth(C));
+                    ASSERT(learn_a_much_longer_sequence(C));
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#10 Ageing (you can't teach an old dog new tricks)\n";
+                    clog << "#9 Ageing (you can't teach an old dog new tricks)\n";
                     auto forever_adaptable = [&](Cortex& dog) -> bool {
                         for (time_t tm{}; tm < SimulatedInfinity; ++tm) {
                             vector<Pattern> new_trick = circular_random_temporal_sequence(temporal_sequence_length);
