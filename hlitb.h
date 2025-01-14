@@ -229,18 +229,17 @@ namespace sprogar {
                 },
                 [](time_t temporal_sequence_length) {
                     clog << "#8 Universal (predict longer sequences)\n";
-                    auto learn_a_much_longer_sequence = [&](const Cortex& C) -> bool {
+                    auto learn_a_longer_sequence = [&]() -> bool {
                         for (time_t tm{}; tm < SimulatedInfinity; ++tm) {
-                            Cortex CC = C;
-                            const vector<Pattern> longer_sequence = circular_random_temporal_sequence(temporal_sequence_length * 2);
-                            if (adapt(CC, longer_sequence))
+                            Cortex C;
+                            const vector<Pattern> longer_sequence = circular_random_temporal_sequence(temporal_sequence_length + 1);
+                            if (adapt(C, longer_sequence))
                                 return true;
                         }
                         return false;
                     };
 
-                    Cortex C;
-                    ASSERT(learn_a_much_longer_sequence(C));
+                    ASSERT(learn_a_longer_sequence());
                 },
                 [](time_t temporal_sequence_length) {
                     clog << "#9 Ageing (you can't teach an old dog new tricks)\n";
