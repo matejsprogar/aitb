@@ -60,11 +60,11 @@ namespace sprogar {
 
 
         template <typename Cortex, typename BitPattern, size_t SimulatedInfinity = 500>
-            requires std::regular<Cortex> && PatternProcessor<Cortex, BitPattern> && BitsetLike<BitPattern>
+        requires std::regular<Cortex>&& PatternProcessor<Cortex, BitPattern>&& std::equality_comparable<BitPattern> && BitsetLike<BitPattern>
         class Testbed
         {
         public:
-            static void verify()
+            static void run()
             {
                 time_t temporal_sequence_length = learnable_temporal_sequence_length();
                 ASSERT(temporal_sequence_length > 1);
