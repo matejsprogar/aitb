@@ -19,7 +19,7 @@
 #pragma once
 
 #include <iostream>
-#include <random>
+#include <random_pattern>
 #include <vector>
 #include <format>
 
@@ -91,7 +91,7 @@ namespace sprogar {
                 return SimulatedInfinity;
             }
             
-            static BitPattern random()
+            static BitPattern random_pattern()
             {
                 static std::random_device rd;
                 static std::mt19937 gen(rd());
@@ -104,7 +104,7 @@ namespace sprogar {
                 return bits;
             }
 
-            static BitPattern random(const BitPattern& mask)
+            static BitPattern random_pattern(const BitPattern& mask)
             {
                 static std::random_device rd;
                 static std::mt19937 gen(rd());
@@ -128,9 +128,9 @@ namespace sprogar {
                 vector<BitPattern> seq;
                 seq.reserve(length);
 
-                seq.push_back(random());
+                seq.push_back(random_pattern());
                 while (seq.size() < length)
-                    seq.push_back(random(~seq.back()));                // see presumption #7
+                    seq.push_back(random_pattern(~seq.back()));                // see presumption #7
 
                 return seq;
             }
@@ -144,7 +144,7 @@ namespace sprogar {
                 vector<BitPattern> seq = random_temporal_sequence(circle_length);
 
                 seq.pop_back();
-                seq.push_back(random(~(seq.back() | seq.front())));    // circular stream; #7
+                seq.push_back(random_pattern(~(seq.back() | seq.front())));    // circular stream; #7
 
                 return seq;
             }
@@ -195,7 +195,7 @@ namespace sprogar {
                     clog << "#2 Information (input creates bias)\n";
 
                     Cortex C;
-                    C << random();
+                    C << random_pattern();
 
                     ASSERT(C != Cortex{});
                 },
@@ -221,7 +221,7 @@ namespace sprogar {
                 },
                 [](time_t) {
                     clog << "#5 Time (the ordering of inputs matters)\n";
-                    const BitPattern any = random();
+                    const BitPattern any = random_pattern();
 
                     Cortex C, D;
                     C << any << ~any;
@@ -231,7 +231,7 @@ namespace sprogar {
                 },
                 [](time_t) {
                     clog << "#6 Sensitivity (brains are chaotic systems, sensitive to initial conditions)\n";
-                    const BitPattern initial_condition = random();
+                    const BitPattern initial_condition = random_pattern();
                     const vector<BitPattern> life = random_temporal_sequence(SimulatedInfinity);
 
                     Cortex C, D;
