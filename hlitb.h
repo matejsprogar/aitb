@@ -19,7 +19,7 @@
 #pragma once
 
 #include <iostream>
-#include <random_pattern>
+#include <random>
 #include <vector>
 #include <format>
 
@@ -90,19 +90,6 @@ namespace sprogar {
                 }
                 return SimulatedInfinity;
             }
-            
-            static BitPattern random_pattern()
-            {
-                static std::random_device rd;
-                static std::mt19937 gen(rd());
-                static std::bernoulli_distribution bd(0.5);
-                
-                BitPattern bits{};
-                for (size_t i=0; i<bits.size(); ++i)
-                    bits[i] = bd(gen);
-                    
-                return bits;
-            }
 
             static BitPattern random_pattern(const BitPattern& mask)
             {
@@ -116,6 +103,11 @@ namespace sprogar {
                         bits[i] = bd(gen);
                     
                 return bits;
+            }
+            static BitPattern random_pattern()
+            {
+                static const BitPattern all_ones = ~BitPattern{};
+                return random_pattern(all_ones);
             }
 
             /*
