@@ -19,6 +19,7 @@
 #pragma once
 
 #include <iostream>
+#include <cassert>
 #include <random>
 #include <vector>
 #include <format>
@@ -68,6 +69,7 @@ namespace sprogar {
             {
                 time_t temporal_sequence_length = learnable_temporal_sequence_length();
                 ASSERT(temporal_sequence_length > 1);
+
                 clog << "Human-like Intelligence Testbed:\n"
                      << "temporal_sequence_length = " << temporal_sequence_length << endl << endl;
                 
@@ -82,7 +84,7 @@ namespace sprogar {
             
             static time_t learnable_temporal_sequence_length()
             {
-                for (time_t tm = 1; tm < SimulatedInfinity; ++tm) {
+                for (time_t tm = 2; tm < SimulatedInfinity; ++tm) {
                     Cortex C;
                     const vector<BitPattern> sequence = circular_random_temporal_sequence(tm);
                     if (!adapt(C, sequence))
@@ -91,55 +93,59 @@ namespace sprogar {
                 return SimulatedInfinity;
             }
 
-            static BitPattern random_pattern(const BitPattern& mask)
+            template<typename... T>
+            requires (std::same_as<T, BitPattern> && ...)
+            static BitPattern random_pattern(const T&... off_bits)
             {
                 static std::random_device rd;
-                static std::mt19937 gen(rd());
+                static thread_local std::mt19937 gen(rd());
                 static std::bernoulli_distribution bd(0.5);
                 
                 BitPattern bits{};
                 for (size_t i=0; i<bits.size(); ++i)
-                    if (mask[i])
+                    if (!(off_bits[i] | ...))
                         bits[i] = bd(gen);
                     
                 return bits;
             }
             static BitPattern random_pattern()
             {
-                static const BitPattern all_ones = ~BitPattern{};
-                return random_pattern(all_ones);
+                static const BitPattern bits{};
+                return random_pattern(bits);
+            }
+            friend BitPattern operator ~(const BitPattern& pattern)
+            {
+                BitPattern inv;
+                for (size_t i = 0; i < pattern.size(); ++i)
+                    inv[i] = !pattern[i];
+                return inv;
             }
 
-            /*
-            * #7: Temporal signals incorporate an absolute refractory period following each spike.
-            */
+            // #7: Temporal signals incorporate an absolute refractory period following each spike.
             static vector<BitPattern> random_temporal_sequence(time_t length)
             {
-                if (length == 0) return vector<BitPattern>{};
-
+                assert (length > 0);
                 vector<BitPattern> seq;
                 seq.reserve(length);
 
                 seq.push_back(random_pattern());
                 while (seq.size() < length)
-                    seq.push_back(random_pattern(~seq.back()));                // see presumption #7
+                    seq.push_back(random_pattern(seq.back()));             // see #7
 
                 return seq;
             }
-            /*
-            * Enables circular processing of the same sequence of patterns.
-            */
             static vector<BitPattern> circular_random_temporal_sequence(time_t circle_length)
             {
-                if (circle_length <= 1) return vector<BitPattern>{circle_length, BitPattern{}};
-
+                assert (circle_length > 1);
                 vector<BitPattern> seq = random_temporal_sequence(circle_length);
 
                 seq.pop_back();
-                seq.push_back(random_pattern(~(seq.back() | seq.front())));    // circular stream; #7
+                seq.push_back(random_pattern(seq.back(), seq.front()));    // circular stream; #7
 
                 return seq;
             }
+
+
             static vector<BitPattern> behaviour(Cortex& C, time_t length)
             {
                 vector<BitPattern> predictions;
@@ -213,11 +219,11 @@ namespace sprogar {
                 },
                 [](time_t) {
                     clog << "#5 Time (the ordering of inputs matters)\n";
-                    const BitPattern any = random_pattern();
+                    const BitPattern any = random_pattern(), other = ~any;
 
                     Cortex C, D;
-                    C << any << ~any;
-                    D << ~any << any;
+                    C << any << other;
+                    D << other << any;
 
                     ASSERT(C != D);
                 },
