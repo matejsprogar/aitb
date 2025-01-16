@@ -36,13 +36,6 @@ namespace sprogar {
     inline namespace human_like_intelligence {
         using namespace std;
 
-        template <typename T, ranges::range Range>
-        T& operator << (T& target, Range&& range) {
-            for (auto&& elt : range)
-                target << elt;
-            return target;
-        }
-
         template <typename Cortex, typename BitPattern>
         concept PatternProcessor = requires(Cortex cortex, const Cortex ccortex, BitPattern pattern)
         {
@@ -58,9 +51,30 @@ namespace sprogar {
             { cpattern.size() } -> convertible_to<size_t>;
         };
 
+        template <typename T, ranges::range Range>
+            requires PatternProcessor<T, std::ranges::range_value_t<Range>>
+        T& operator << (T& target, Range&& range) {
+            for (auto&& elt : range)
+                target << elt;
+            return target;
+        }
 
-        template <typename Cortex, typename BitPattern, size_t SimulatedInfinity = 500>
-        requires std::regular<Cortex>&& PatternProcessor<Cortex, BitPattern>&& std::equality_comparable<BitPattern> && BitsetLike<BitPattern>
+        template <typename T>
+        concept NoUnaryTilde = requires(T t) { ~t; } == false;
+
+        template <BitsetLike Pattern>
+        requires NoUnaryTilde<Pattern>
+        Pattern operator ~(const Pattern& pattern)
+        {
+            Pattern inverted{};
+            for (size_t i = 0; i < pattern.size(); ++i)
+                inverted[i] = !pattern[i];
+            return inverted;
+        }
+
+
+        template <typename Cortex, BitsetLike BitPattern, size_t SimulatedInfinity = 500>
+            requires std::regular<Cortex> && PatternProcessor<Cortex, BitPattern> && std::equality_comparable<BitPattern>
         class Testbed
         {
         public:
@@ -109,15 +123,8 @@ namespace sprogar {
             }
             static BitPattern random_pattern()
             {
-                static const BitPattern bits{};
-                return random_pattern(bits);
-            }
-            static BitPattern invert(const BitPattern& pattern)
-            {
-                BitPattern inv;
-                for (size_t i = 0; i < pattern.size(); ++i)
-                    inv[i] = !pattern[i];
-                return inv;
+                static const BitPattern off_bits{};
+                return random_pattern(off_bits);
             }
 
             // #7: Temporal signals incorporate an absolute refractory period following each spike.
@@ -218,7 +225,7 @@ namespace sprogar {
                 },
                 [](time_t) {
                     clog << "#5 Time (the ordering of inputs matters)\n";
-                    const BitPattern any = random_pattern(), other = invert(any);
+                    const BitPattern any = random_pattern(), other = ~any;
 
                     Cortex C, D;
                     C << any << other;
@@ -233,13 +240,13 @@ namespace sprogar {
 
                     Cortex C, D;
                     C << initial_condition << life;
-                    D << invert(initial_condition) << life;
+                    D << ~initial_condition << life;
 
                     ASSERT(C != D);
                 },
                 [](time_t) {
                     clog << "#7 Refractory period (every spike (1) must be followed by a no-spike (0) event)\n";
-                    const BitPattern all_zero{}, all_ones = invert(all_zero);
+                    const BitPattern all_zero{}, all_ones = ~all_zero;
                     const vector<BitPattern> learnable = {all_zero, all_ones };
                     const vector<BitPattern> unlearnable = { all_ones, all_ones };
 
