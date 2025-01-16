@@ -113,7 +113,7 @@ namespace sprogar {
                 static const BitPattern bits{};
                 return random_pattern(bits);
             }
-            friend BitPattern operator ~(const BitPattern& pattern)
+            static BitPattern invert(const BitPattern& pattern)
             {
                 BitPattern inv;
                 for (size_t i = 0; i < pattern.size(); ++i)
@@ -219,7 +219,7 @@ namespace sprogar {
                 },
                 [](time_t) {
                     clog << "#5 Time (the ordering of inputs matters)\n";
-                    const BitPattern any = random_pattern(), other = ~any;
+                    const BitPattern any = random_pattern(), other = invert(any);
 
                     Cortex C, D;
                     C << any << other;
@@ -234,13 +234,13 @@ namespace sprogar {
 
                     Cortex C, D;
                     C << initial_condition << life;
-                    D << ~initial_condition << life;
+                    D << invert(initial_condition) << life;
 
                     ASSERT(C != D);
                 },
                 [](time_t) {
                     clog << "#7 Refractory period (every spike (1) must be followed by a no-spike (0) event)\n";
-                    const BitPattern all_zero{}, all_ones = ~all_zero;
+                    const BitPattern all_zero{}, all_ones = invert(all_zero);
                     const vector<BitPattern> learnable = {all_zero, all_ones };
                     const vector<BitPattern> unlearnable = { all_ones, all_ones };
 
