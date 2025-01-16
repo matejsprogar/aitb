@@ -44,11 +44,10 @@ namespace sprogar {
         }
 
         template <typename Cortex, typename BitPattern>
-        concept PatternProcessor = requires(Cortex cortex, BitPattern pattern)
+        concept PatternProcessor = requires(Cortex cortex, const Cortex ccortex, BitPattern pattern)
         {
             { cortex << pattern } -> convertible_to<Cortex&>;
-            { cortex.predict() } -> convertible_to<BitPattern>;
-            // axiom(const Cortex cortex) { cortex.predict(); }
+            { ccortex.predict() } -> convertible_to<BitPattern>;
         };
 
         template <typename BitPattern>
