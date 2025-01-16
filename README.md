@@ -22,10 +22,11 @@ Počitek nevrona po proženju (_"refractory period"_) ni zgolj fiziološka, ampa
 ## API
 Razred _BitPattern_ mora privzeto omogočati kreacijo praznega vzorca (vsi biti _off_), dostop do vsakega bita v vzorcu preko operatorja [] in primerjavo vzorcev:
 1. _BitPattern()_ konstruktor resetira vse bite v vzorcu (_false_);
-2. _BitPattern::operator[](size_t index)_ omogoča branje/pisanje poljubnega bita v vzorcu;
-3. _BitPattern_::size() const_ vrne število bitov v vzorcu.
-4. operator == (const _BitPattern_& lhs, const _BitPattern_& rhs)
-5. operator != (const _BitPattern_& lhs, const _BitPattern_& rhs)
+2. _bool BitPattern::operator[](size_t index) const_ omogoča branje poljubnega bita v vzorcu;
+3. _BitPattern::reference BitPattern::operator[](size_t index)_ omogoča pisanje poljubnega bita v vzorcu;
+4. _BitPattern_::size() const_ vrne število bitov v vzorcu.
+5. operator == (const _BitPattern_& lhs, const _BitPattern_& rhs)
+6. operator != (const _BitPattern_& lhs, const _BitPattern_& rhs)
 
 Razred _Brain_ mora omogočati sprejem enega vzorca in napoved prihodnjega vzroca:
 1. _brain << vzorec;_ pošlje vzorec v model;
@@ -45,6 +46,7 @@ assert(A == B);						// primerjava mozganov
 assert(prazen_vzorec == prazen_vzorec);			// primerjava bitnih vzorcev
 assert(2*3 == MojBitPattern::size());			// velikost vzorca v primeru video 2x3
 // assert(prazen_vzorec[i] == false) za vsak i v intervalu [0: MojBitPattern::size()-1];
+prazen_vzorec[0] = true;				// spreminjanje vzorca po bitih
 
 A << prazen_vzorec << prazen_vzorec;			// A << {0b000000} << {0b000000};
 MojBitPattern napoved = A.predict();
