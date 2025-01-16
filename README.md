@@ -12,7 +12,7 @@ Projekt HLITB vključuje 10 domnevno potrebnih pogojev za inteligenco. Verjamem,
 Izdelati nevronsko mrežo (_class Brain_), ki na vhodu sprejme vhodni vzorec (_class Signal_) in na izhodu uspešno napove *naslednji* vhodni vzorec. Sposobnost napovedovanja prihodnosti je preverjana s pravilnim napovedovanjem zaporedij vhodnih vzorcev, **ista** mreža pa mora biti sposobna napovedati tudi (različno dolge) vhodne sekvence.
 
 ## API
-Vsak vzorec sestoji iz več bitov (na primer 6 bitov v 2x3 matriki), ki predstavljajo senzorične vhode; pomen bitov ni pomemben, število bitov je poljubno, a predefinirano v okviru razreda _BitPattern_. Razred _BitPattern_ mora privzeto omogočati kreacijo praznega vzorca (vsi biti 0), dostop do vsakega bita v vzorcu preko operatorja [] in primerjavo vzorcev:
+Vsak vzorec sestoji iz več bitov (na primer 6 video bitov v 2x3 matriki), ki predstavljajo senzorične vhode; pomen bitov ni pomemben, število bitov je poljubno, a predefinirano v okviru razreda _BitPattern_. Razred _BitPattern_ mora privzeto omogočati kreacijo praznega vzorca (vsi biti 0), dostop do vsakega bita v vzorcu preko operatorja [] in primerjavo vzorcev:
 
 1. _BitPattern()_ konstruktor resetira vse bite v vzorcu (_false_);
 2. _BitPattern::operator[](size_t index)_ omogoča branje/pisanje poljubnega bita v vzorcu;
@@ -26,31 +26,34 @@ Počitek nevrona po proženju (_"refractory period"_) ni zgolj fiziološka, ampa
 
 ### Sintaksa
 
-Razreda _MojBrain_ in _BitPattern_ morata omogočati naslednjo kodo:
+Razreda _MojBrain_ in _MojBitPattern_ morata omogočati naslednjo kodo:
 <pre>
 MojBrain A, B = A;
-BitPattern prazen_vzorec = _BitPattern()_, polni_vzorec = ~prvi_vzorec);<br/>
-&nbsp;
-bool enaki_mozgani = A == B;
-bool enak_signal = prvi_vzorec == drugi_vzorec;
-&nbsp;
-A << polni_vzorec << prazen_vzorec;
-BitPattern napoved = A.predict();
+MojBitPattern prazen_vzorec;
+	
+assert(A == B);						// primerjava mozganov
+assert(prazen_vzorec == prazen_vzorec);			// primerjava bitnih vzorcev
+assert(2*3 == MojBitPattern::size());			// velikost vzorca v primeru video 2x3
+// assert(prazen_vzorec[i] == false) za vsak i v intervalu [0: MojBitPattern::size()-1];
+
+A << prazen_vzorec << prazen_vzorec;			// A << {0b000000} << {0b000000};
+MojBitPattern napoved = A.predict();
 </pre>
 
-Trenutno so vsi testi v C++, so pa preprosti in v toliko verjamem, da ne bo težav pri njihovem razumevanju ter posledično prevajanju v jezik po tvoji izbiri. Če ne poznaš "modernega" C++, lahko ignoriraš "_concept_" in "_requires_" kodo.
+Trenutno je vsa koda C++; upam, da ne bo težav pri razumevanju ter posledično prevajanju testov v jezik po tvoji izbiri. Če ne poznaš "modernega" C++, lahko ignoriraš "_concept_" in "_requires_" kodo.
 
 
 ## Primer glavnega programa
 
 <pre>
-#include "hlitb.h"<br/>
-class MojSignal {...};<br/>
-class MojBrain {...};<br/>
+#include "hlitb.h"
+class MojBitPattern {...};
+class MojBrain {...};
 ...
 int main()
 {
-	using Testbed = sprogar::Testbed&lt;MojBrain, MojSignal, 500/*SimulatedInfinity*/&gt;;
+	using Testbed = sprogar::Testbed&lt;MojBrain, MojBitPattern, 500/*SimulatedInfinity*/&gt;;
+	
 	Testbed::run();
 	return 0;
 }
