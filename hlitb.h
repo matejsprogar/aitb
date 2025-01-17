@@ -22,65 +22,27 @@
 #include <cassert>
 #include <random>
 #include <vector>
-#include <format>
+
+#include "concepts.h"
+#include "helpers.h"
 
 #define ASSERT(expression) (void)((!!(expression)) || (std::cerr << red("Assertion failed") \
 	<< __FILE__ << "\nLine " << __LINE__ << ": " << #expression << std::endl, exit(-1), 0))
 
-
-inline std::string red(std::string_view msg) { return std::format("\033[91m{}\033[0m", msg); }
-inline std::string green(std::string_view msg) { return std::format("\033[92m{}\033[0m", msg); }
 
 
 namespace sprogar {
     inline namespace human_like_intelligence {
         using namespace std;
 
-        template <typename Cortex, typename BitPattern>
-        concept PatternProcessor = requires(Cortex cortex, const Cortex ccortex, BitPattern pattern)
-        {
-            { cortex << pattern } -> convertible_to<Cortex&>;
-            { ccortex.predict() } -> convertible_to<BitPattern>;
-        };
-
-        template <typename BitPattern>
-        concept BitsetLike = requires(BitPattern pattern, const BitPattern cpattern)
-        {
-            { pattern[size_t{}] } -> convertible_to<typename BitPattern::reference>;
-            { cpattern[size_t{}] } -> convertible_to<bool>;
-            { cpattern.size() } -> convertible_to<size_t>;
-        };
-
-        template <typename T, ranges::range Range>
-            requires PatternProcessor<T, std::ranges::range_value_t<Range>>
-        T& operator << (T& target, Range&& range) {
-            for (auto&& elt : range)
-                target << elt;
-            return target;
-        }
-
-        template <typename T>
-        concept NoUnaryTilde = requires(T t) { ~t; } == false;
-
-        template <BitsetLike Pattern>
-        requires NoUnaryTilde<Pattern>
-        Pattern operator ~(const Pattern& pattern)
-        {
-            Pattern inverted{};
-            for (size_t i = 0; i < pattern.size(); ++i)
-                inverted[i] = !pattern[i];
-            return inverted;
-        }
-
-
-        template <typename Cortex, BitsetLike BitPattern, size_t SimulatedInfinity = 500>
-            requires std::regular<Cortex> && PatternProcessor<Cortex, BitPattern> && std::equality_comparable<BitPattern>
+        template <typename Cortex, BitIndexable Pattern, size_t SimulatedInfinity = 500>
+            requires PatternProcessor<Cortex, Pattern>
         class Testbed
         {
         public:
             static void run()
             {
-                time_t temporal_sequence_length = learnable_temporal_sequence_length();
+                time_t temporal_sequence_length = max_learnable_temporal_sequence_length();
                 ASSERT(temporal_sequence_length > 1);
 
                 clog << "Human-like Intelligence Testbed:\n"
@@ -95,88 +57,60 @@ namespace sprogar {
         private:
             using time_t = size_t;
             
-            static time_t learnable_temporal_sequence_length()
+            static time_t max_learnable_temporal_sequence_length()
             {
                 for (time_t tm = 2; tm < SimulatedInfinity; ++tm) {
                     Cortex C;
-                    const vector<BitPattern> sequence = circular_random_temporal_sequence(tm);
+                    const vector<Pattern> sequence = circular_random_temporal_sequence(tm);
                     if (!adapt(C, sequence))
-                        return tm-1;
+                        return tm - 1;
                 }
                 return SimulatedInfinity;
             }
 
-            template<typename... T>
-            requires (std::same_as<T, BitPattern> && ...)
-            static BitPattern random_pattern(const T&... off_bits)
+            static Pattern random_pattern()
             {
-                static std::random_device rd;
-                static thread_local std::mt19937 gen(rd());
-                static std::bernoulli_distribution bd(0.5);
-                
-                BitPattern bits{};
-                for (size_t i=0; i<bits.size(); ++i)
-                    if (!(off_bits[i] | ...))
-                        bits[i] = bd(gen);
-                    
-                return bits;
-            }
-            static BitPattern random_pattern()
-            {
-                static const BitPattern off_bits{};
-                return random_pattern(off_bits);
+                static const Pattern no_off_bits{};
+                return helpers::random_pattern(no_off_bits);
             }
 
-            // #7: Temporal signals incorporate an absolute refractory period following each spike.
-            static vector<BitPattern> random_temporal_sequence(time_t length)
+            // #7: Temporal bits incorporate an absolute refractory period following each spike.
+            static vector<Pattern> random_temporal_sequence(time_t length)
             {
                 assert (length > 0);
-                vector<BitPattern> seq;
+                vector<Pattern> seq;
                 seq.reserve(length);
 
                 seq.push_back(random_pattern());
                 while (seq.size() < length)
-                    seq.push_back(random_pattern(seq.back()));             // see #7
+                    seq.push_back(helpers::random_pattern(seq.back()));              // see #7
 
                 return seq;
             }
-            static vector<BitPattern> circular_random_temporal_sequence(time_t circle_length)
+            static vector<Pattern> circular_random_temporal_sequence(time_t circle_length)
             {
                 assert (circle_length > 1);
-                vector<BitPattern> seq = random_temporal_sequence(circle_length);
+                vector<Pattern> seq = random_temporal_sequence(circle_length);
 
                 seq.pop_back();
-                seq.push_back(random_pattern(seq.back(), seq.front()));    // circular stream; #7
+                seq.push_back(helpers::random_pattern(seq.back(), seq.front()));    // circular stream; #7
 
                 return seq;
             }
 
-
-            static vector<BitPattern> behaviour(Cortex& C, time_t length)
+            static vector<Pattern> predict(Cortex& C, const vector<Pattern>& inputs)
             {
-                vector<BitPattern> predictions;
-                predictions.reserve(length);
-
-                while (predictions.size() < length) {
-                    predictions.push_back(C.predict());
-                    C << predictions.back();
-                }
-
-                return predictions;
-            }
-            static vector<BitPattern> predict(Cortex& C, const vector<BitPattern>& inputs)
-            {
-                vector<BitPattern> predictions;
+                vector<Pattern> predictions;
                 predictions.reserve(inputs.size());
 
-                for (const BitPattern& in : inputs) {
+                for (const Pattern& in : inputs) {
                     predictions.push_back(C.predict());
                     C << in;
                 }
 
                 return predictions;
             }
-            static bool adapt(Cortex& C, const vector<BitPattern>& experience)
+            static bool adapt(Cortex& C, const vector<Pattern>& experience)
             {
                 for (time_t time = 0; time < SimulatedInfinity; ++time) {
                     if (predict(C, experience) == experience)
@@ -193,7 +127,7 @@ namespace sprogar {
                     Cortex C;
 
                     ASSERT(C == Cortex{});
-                    ASSERT(C.predict() == BitPattern{});
+                    ASSERT(C.predict() == Pattern{});
                 },
                 [](time_t) {
                     clog << "#2 Information (input creates bias)\n";
@@ -205,7 +139,7 @@ namespace sprogar {
                 },
                 [](time_t) {
                     clog << "#3 Determinism (equal state implies equal life)\n";
-                    const vector<BitPattern> life = random_temporal_sequence(SimulatedInfinity);
+                    const vector<Pattern> life = random_temporal_sequence(SimulatedInfinity);
 
                     Cortex C, D;
                     C << life;
@@ -214,18 +148,29 @@ namespace sprogar {
                     ASSERT(C == D);
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#4 Substitutability (equal behaviour implies equal state)\n";
-                    const vector<BitPattern> kick_off = random_temporal_sequence(temporal_sequence_length);
+                    clog << "#4 Observability (equal behaviour implies equal state)\n";
+                    auto equal_behaviour = [&](Cortex& C, Cortex& D) {
+                        for (time_t time = 0; time < SimulatedInfinity; ++time) {
+                            const auto prediction = C.predict();
+                            if (prediction != D.predict())
+                                return false;
+                            C << prediction;
+                            D << prediction;
+                        }
+
+                        return true;
+                    };
+                    const vector<Pattern> kick_off = random_temporal_sequence(temporal_sequence_length);
 
                     Cortex C;
                     C << kick_off;
                     Cortex D = C;
 
-                    ASSERT(behaviour(C, SimulatedInfinity) == behaviour(D, SimulatedInfinity));
+                    ASSERT(equal_behaviour(C, D));
                 },
                 [](time_t) {
                     clog << "#5 Time (the ordering of inputs matters)\n";
-                    const BitPattern any = random_pattern(), other = ~any;
+                    const Pattern any = random_pattern(), other = ~any;
 
                     Cortex C, D;
                     C << any << other;
@@ -235,8 +180,8 @@ namespace sprogar {
                 },
                 [](time_t) {
                     clog << "#6 Sensitivity (brains are chaotic systems, sensitive to initial conditions)\n";
-                    const BitPattern initial_condition = random_pattern();
-                    const vector<BitPattern> life = random_temporal_sequence(SimulatedInfinity);
+                    const Pattern initial_condition = random_pattern();
+                    const vector<Pattern> life = random_temporal_sequence(SimulatedInfinity);
 
                     Cortex C, D;
                     C << initial_condition << life;
@@ -246,9 +191,9 @@ namespace sprogar {
                 },
                 [](time_t) {
                     clog << "#7 Refractory period (every spike (1) must be followed by a no-spike (0) event)\n";
-                    const BitPattern all_zero{}, all_ones = ~all_zero;
-                    const vector<BitPattern> learnable = {all_zero, all_ones };
-                    const vector<BitPattern> unlearnable = { all_ones, all_ones };
+                    const Pattern all_zero{}, all_ones = ~all_zero;
+                    const vector<Pattern> learnable = {all_zero, all_ones };
+                    const vector<Pattern> unlearnable = { all_ones, all_ones };
 
                     Cortex C, D;
 
@@ -260,7 +205,7 @@ namespace sprogar {
                     auto learn_a_longer_sequence = [&]() -> bool {
                         for (time_t tm{}; tm < SimulatedInfinity; ++tm) {
                             Cortex C;
-                            const vector<BitPattern> longer_sequence = circular_random_temporal_sequence(temporal_sequence_length + 1);
+                            const vector<Pattern> longer_sequence = circular_random_temporal_sequence(temporal_sequence_length + 1);
                             if (adapt(C, longer_sequence))
                                 return true;
                         }
@@ -273,7 +218,7 @@ namespace sprogar {
                     clog << "#9 Ageing (you can't teach an old dog new tricks)\n";
                     auto forever_adaptable = [&](Cortex& dog) -> bool {
                         for (time_t tm{}; tm < SimulatedInfinity; ++tm) {
-                            vector<BitPattern> new_trick = circular_random_temporal_sequence(temporal_sequence_length);
+                            vector<Pattern> new_trick = circular_random_temporal_sequence(temporal_sequence_length);
                             if (not adapt(dog, new_trick))
                                 return false;
                         }
