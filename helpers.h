@@ -30,16 +30,16 @@ namespace sprogar {
     inline namespace helpers {
 
         template <typename T, std::ranges::range Range>
-        requires PatternProcessor<T, std::ranges::range_value_t<Range>>
-            T& operator << (T& target, Range&& range) {
+        requires InputPredictable<T, std::ranges::range_value_t<Range>>
+        T& operator << (T& target, Range&& range) {
             for (auto&& elt : range)
                 target << elt;
             return target;
         }
 
-        template <BitIndexable Pattern>
+        template <RandomAccessible Pattern>
         requires NoUnaryTilde<Pattern>
-            Pattern operator ~(const Pattern& pattern)
+        Pattern operator ~(const Pattern& pattern)
         {
             Pattern inverted{};
             for (size_t i = 0; i < pattern.size(); ++i)
@@ -48,10 +48,10 @@ namespace sprogar {
         }
 
         template<typename Pattern, typename... Off>
+        requires RandomAccessible<Pattern>
         Pattern random_pattern(const Pattern& off_bits, const Off&... other_off_bits)
         {
-            static std::random_device rd;
-            static thread_local std::mt19937 generator(rd());
+            static thread_local std::mt19937 generator(std::random_device{}());
             static std::bernoulli_distribution bd(0.5);
 
             Pattern bits{};
