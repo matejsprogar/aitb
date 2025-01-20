@@ -43,10 +43,10 @@ MojBrain A, B = A;
 MojPattern prazen_vzorec;
 	
 assert(A == B);						// primerjava mozganov
-assert(prazen_vzorec == prazen_vzorec);			// primerjava bitnih vzorcev
+assert(prazen_vzorec == prazen_vzorec);			// primerjava vzorcev
 assert(2*3 == MojPattern::size());			// velikost vzorca v primeru video 2x3
 // assert(prazen_vzorec[i] == false) za vsak i v intervalu [0: MojPattern::size()-1];
-prazen_vzorec[0] = true;				// spreminjanje vzorca po bitih
+prazen_vzorec[0] = true;				// spreminjanje vzorca
 
 A << prazen_vzorec << prazen_vzorec;			// A << {0b000000} << {0b000000};
 MojPattern napoved = A.predict();
