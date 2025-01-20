@@ -22,7 +22,7 @@ namespace sprogar {
     inline namespace human_like_intelligence {
 
         template <typename Cortex, typename Pattern>
-        concept InputPredictable = std::regular<Cortex> and requires(Cortex cortex, const Cortex ccortex, Pattern pattern)
+        concept InputPredictor = std::regular<Cortex> and requires(Cortex cortex, const Cortex ccortex, Pattern pattern)
         {
             { cortex << pattern } -> std::convertible_to<Cortex&>;
             { ccortex.predict() } -> std::convertible_to<Pattern>;

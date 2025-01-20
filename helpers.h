@@ -30,7 +30,7 @@ namespace sprogar {
     inline namespace helpers {
 
         template <typename T, std::ranges::range Range>
-        requires InputPredictable<T, std::ranges::range_value_t<Range>>
+        requires InputPredictor<T, std::ranges::range_value_t<Range>>
         T& operator << (T& target, Range&& range) {
             for (auto&& elt : range)
                 target << elt;

@@ -36,17 +36,17 @@ namespace sprogar {
         using namespace std;
 
         template <typename Cortex, RandomAccessible Pattern, size_t SimulatedInfinity = 500>
-            requires InputPredictable<Cortex, Pattern>
+            requires InputPredictor<Cortex, Pattern>
         class Testbed
         {
         public:
             static void run()
             {
-                time_t temporal_sequence_length = max_learnable_temporal_sequence_length();
+                const time_t temporal_sequence_length = max_learnable_temporal_sequence_length();
                 ASSERT(temporal_sequence_length > 1);
 
                 clog << "Human-like Intelligence Testbed:\n"
-                     << "temporal_sequence_length = " << temporal_sequence_length << endl << endl;
+                     << "Conducting tests on temporal sequences of length " << temporal_sequence_length << endl << endl;
                 
                 for (const auto& test : testbed)
                     test(temporal_sequence_length);
@@ -192,7 +192,7 @@ namespace sprogar {
                 [](time_t) {
                     clog << "#7 Refractory period (every spike (1) must be followed by a no-spike (0) event)\n";
                     const Pattern all_zero{}, all_ones = ~all_zero;
-                    const vector<Pattern> learnable = {all_zero, all_ones };
+                    const vector<Pattern> learnable = { all_ones, all_zero };
                     const vector<Pattern> unlearnable = { all_ones, all_ones };
 
                     Cortex C, D;
@@ -201,7 +201,7 @@ namespace sprogar {
                     ASSERT(not adapt(D, unlearnable));
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#8 Universal (predict longer sequences)\n";
+                    clog << "#8 Universal (can predict longer sequences)\n";
                     auto learn_a_longer_sequence = [&]() -> bool {
                         for (time_t tm{}; tm < SimulatedInfinity; ++tm) {
                             Cortex C;
