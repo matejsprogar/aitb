@@ -22,14 +22,14 @@ namespace sprogar {
     inline namespace human_like_intelligence {
 
         template <typename Cortex, typename Pattern>
-        concept PatternProcessor = std::regular<Cortex> and requires(Cortex cortex, const Cortex ccortex, Pattern pattern)
+        concept InputPredictable = std::regular<Cortex> and requires(Cortex cortex, const Cortex ccortex, Pattern pattern)
         {
             { cortex << pattern } -> std::convertible_to<Cortex&>;
             { ccortex.predict() } -> std::convertible_to<Pattern>;
         };
 
         template <typename Pattern>
-        concept BitIndexable = std::equality_comparable<Pattern> and requires(Pattern pattern, const Pattern cpattern)
+        concept RandomAccessible = std::equality_comparable<Pattern> and requires(Pattern pattern, const Pattern cpattern)
         {
             { pattern[size_t{}] } -> std::convertible_to<typename Pattern::reference>;
             { cpattern[size_t{}] } -> std::convertible_to<bool>;
