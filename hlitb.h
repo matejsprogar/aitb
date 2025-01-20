@@ -35,8 +35,8 @@ namespace sprogar {
     inline namespace human_like_intelligence {
         using namespace std;
 
-        template <typename Cortex, BitIndexable Pattern, size_t SimulatedInfinity = 500>
-            requires PatternProcessor<Cortex, Pattern>
+        template <typename Cortex, RandomAccessible Pattern, size_t SimulatedInfinity = 500>
+            requires InputPredictable<Cortex, Pattern>
         class Testbed
         {
         public:
@@ -48,7 +48,7 @@ namespace sprogar {
                 clog << "Human-like Intelligence Testbed:\n"
                      << "temporal_sequence_length = " << temporal_sequence_length << endl << endl;
                 
-                for (auto test : testbed)
+                for (const auto& test : testbed)
                     test(temporal_sequence_length);
 
                 clog << green("PASS") << endl << endl;
