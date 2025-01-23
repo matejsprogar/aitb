@@ -27,39 +27,38 @@ namespace sprogar {
     inline std::string red(const char* msg) { return std::format("\033[91m{}\033[0m", msg); }
     inline std::string green(const char* msg) { return std::format("\033[92m{}\033[0m", msg); }
 
-    inline namespace helpers {
+    inline namespace human_like_intelligence {
+        inline namespace helpers {
 
-        template <typename T, std::ranges::range Range>
-        requires InputPredictor<T, std::ranges::range_value_t<Range>>
-        T& operator << (T& target, Range&& range) {
-            for (auto&& elt : range)
-                target << elt;
-            return target;
-        }
+            template <typename T, std::ranges::range Range>
+            requires InputPredictor<T, std::ranges::range_value_t<Range>>
+            T& operator << (T& target, Range&& range) {
+                for (auto&& elt : range)
+                    target << elt;
+                return target;
+            }
 
-        template <RandomAccessible Pattern>
-        requires NoUnaryTilde<Pattern>
-        Pattern operator ~(const Pattern& pattern)
-        {
-            Pattern inverted{};
-            for (size_t i = 0; i < pattern.size(); ++i)
-                inverted[i] = !pattern[i];
-            return inverted;
-        }
+            template <BitProvider Pattern>
+            requires NoUnaryTilde<Pattern>
+            Pattern operator ~(const Pattern& pattern)
+            {
+                Pattern inverted{};
+                for (size_t i = 0; i < pattern.size(); ++i)
+                    inverted[i] = !pattern[i];
+                return inverted;
+            }
 
-        template<typename Pattern, typename... Off>
-        requires RandomAccessible<Pattern>
-        Pattern random_pattern(const Pattern& off_bits, const Off&... other_off_bits)
-        {
-            static thread_local std::mt19937 generator(std::random_device{}());
-            static std::bernoulli_distribution bd(0.5);
+            template <BitProvider Pattern>
+            Pattern single_random_spike()
+            {
+                std::mt19937 generator{ std::random_device{}() };
+                std::uniform_int_distribution<size_t> distrib{ 0, Pattern::size() - 1 };
+                const size_t id = distrib(generator);
 
-            Pattern bits{};
-            for (size_t i = 0; i < bits.size(); ++i)
-                if (!(off_bits[i] | (false | ... | other_off_bits[i])))
-                    bits[i] = bd(generator);
-
-            return bits;
+                Pattern one_spike{};
+                one_spike[id] = 1;
+                return one_spike;
+            }
         }
     }
 }

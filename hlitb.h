@@ -26,7 +26,8 @@
 #include "concepts.h"
 #include "helpers.h"
 
-#define ASSERT(expression) (void)((!!(expression)) || (std::cerr << red("Assertion failed") \
+
+#define ASSERT(expression) (void)((!!(expression)) || (std::cerr << red("Assertion failed ") \
 	<< __FILE__ << "\nLine " << __LINE__ << ": " << #expression << std::endl, exit(-1), 0))
 
 
@@ -35,15 +36,14 @@ namespace sprogar {
     inline namespace human_like_intelligence {
         using namespace std;
 
-        template <typename Cortex, RandomAccessible Pattern, size_t SimulatedInfinity = 500>
-            requires InputPredictor<Cortex, Pattern>
+        template <typename Cortex, typename Pattern, size_t SimulatedInfinity = 500>
+            requires InputPredictor<Cortex, Pattern> and BitProvider<Pattern>
         class Testbed
         {
         public:
             static void run()
             {
                 const time_t temporal_sequence_length = max_learnable_temporal_sequence_length();
-                ASSERT(temporal_sequence_length > 1);
 
                 clog << "Human-like Intelligence Testbed:\n"
                      << "Conducting tests on temporal sequences of length " << temporal_sequence_length << endl << endl;
@@ -68,13 +68,22 @@ namespace sprogar {
                 return SimulatedInfinity;
             }
 
-            static Pattern random_pattern()
+            // Each bit is set randomly unless explicitly required to remain off.
+            template<std::same_as<Pattern>... Patterns>
+            static Pattern random_pattern(const Patterns&... off)
             {
-                static const Pattern no_off_bits{};
-                return helpers::random_pattern(no_off_bits);
+                static thread_local std::mt19937 generator{std::random_device{}()};
+                static std::bernoulli_distribution bd(0.5);
+
+                Pattern bits{};
+                for (size_t i = 0; i < bits.size(); ++i)
+                    if (!(false | ... | off[i]))
+                        bits[i] = bd(generator);
+
+                return bits;
             }
 
-            // #7: Temporal bits incorporate an absolute refractory period following each spike.
+            // #7: A temporal sequence incorporates an absolute refractory period following each spike.
             static vector<Pattern> random_temporal_sequence(time_t length)
             {
                 assert (length > 0);
@@ -83,7 +92,7 @@ namespace sprogar {
 
                 seq.push_back(random_pattern());
                 while (seq.size() < length)
-                    seq.push_back(helpers::random_pattern(seq.back()));              // see #7
+                    seq.push_back(random_pattern(seq.back()));              // see #7
 
                 return seq;
             }
@@ -93,7 +102,7 @@ namespace sprogar {
                 vector<Pattern> seq = random_temporal_sequence(circle_length);
 
                 seq.pop_back();
-                seq.push_back(helpers::random_pattern(seq.back(), seq.front()));    // circular stream; #7
+                seq.push_back(random_pattern(seq.back(), seq.front()));    // circular stream; #7
 
                 return seq;
             }
@@ -190,10 +199,10 @@ namespace sprogar {
                     ASSERT(C != D);
                 },
                 [](time_t) {
-                    clog << "#7 Refractory period (every spike (1) must be followed by a no-spike (0) event)\n";
-                    const Pattern all_zero{}, all_ones = ~all_zero;
-                    const vector<Pattern> learnable = { all_ones, all_zero };
-                    const vector<Pattern> unlearnable = { all_ones, all_ones };
+                    clog << "#7 Refractory period (each spike (1) must be followed by a no-spike (0) event)\n";
+                    const Pattern no_spikes{}, one_spike = single_random_spike<Pattern>();
+                    const vector<Pattern> learnable = { one_spike, no_spikes };
+                    const vector<Pattern> unlearnable = { one_spike, one_spike };
 
                     Cortex C, D;
 
@@ -201,7 +210,12 @@ namespace sprogar {
                     ASSERT(not adapt(D, unlearnable));
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#8 Universal (can predict longer sequences)\n";
+                    clog << "#8 Adaptable (can predict sequences)\n";
+
+                    ASSERT(temporal_sequence_length > 1);
+                },
+                [](time_t temporal_sequence_length) {
+                    clog << "#9 Universal (can predict longer sequences)\n";
                     auto learn_a_longer_sequence = [&]() -> bool {
                         for (time_t tm{}; tm < SimulatedInfinity; ++tm) {
                             Cortex C;
@@ -215,7 +229,7 @@ namespace sprogar {
                     ASSERT(learn_a_longer_sequence());
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#9 Ageing (you can't teach an old dog new tricks)\n";
+                    clog << "#10 Ageing (you can't teach an old dog new tricks)\n";
                     auto forever_adaptable = [&](Cortex& dog) -> bool {
                         for (time_t tm{}; tm < SimulatedInfinity; ++tm) {
                             vector<Pattern> new_trick = circular_random_temporal_sequence(temporal_sequence_length);

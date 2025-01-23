@@ -29,11 +29,11 @@ namespace sprogar {
         };
 
         template <typename Pattern>
-        concept RandomAccessible = std::equality_comparable<Pattern> and requires(Pattern pattern, const Pattern cpattern)
+        concept BitProvider = std::equality_comparable<Pattern> and requires(Pattern pattern, const Pattern cpattern)
         {
             { pattern[size_t{}] } -> std::convertible_to<typename Pattern::reference>;
             { cpattern[size_t{}] } -> std::convertible_to<bool>;
-            { cpattern.size() } -> std::convertible_to<size_t>;
+            { Pattern::size() } -> std::convertible_to<size_t>;
         };
 
         template <typename T>
