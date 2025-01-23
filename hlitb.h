@@ -200,7 +200,7 @@ namespace sprogar {
                 },
                 [](time_t) {
                     clog << "#7 Refractory period (each spike (1) must be followed by a no-spike (0) event)\n";
-                    const Pattern no_spikes{}, one_spike = single_random_spike<Pattern>();
+                    const Pattern no_spikes{}, one_spike = helpers::single_random_spike<Pattern>();
                     const vector<Pattern> learnable = { one_spike, no_spikes };
                     const vector<Pattern> unlearnable = { one_spike, one_spike };
 
