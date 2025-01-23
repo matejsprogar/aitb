@@ -9,18 +9,18 @@ Projekt HLITB vključuje 10 domnevno potrebnih pogojev za inteligenco. Verjamem,
 
 
 ## Cilj
-Izdelati nevronsko mrežo (_class Brain_), ki na vhodu sprejme vhodni vzorec (_class Pattern_) in na izhodu uspešno napove *naslednji* vhodni vzorec. Sposobnost napovedovanja prihodnosti je preverjana s pravilnim napovedovanjem zaporedij vhodnih vzorcev, **ista** mreža pa mora biti sposobna napovedati tudi (različno dolge) vhodne sekvence. 
+Izdelati nevronsko mrežo (_class Brain_), ki na vhodu sprejme vhodni vzorec (_class Pattern_) in na izhodu uspešno napove *naslednji* vhodni vzorec. Sposobnost napovedovanja prihodnosti je preverjana s pravilnim napovedovanjem zaporedij vhodnih vzorcev, **ista** mreža pa mora biti sposobna napovedati (tudi) različno dolge vhodne sekvence. 
 
 Vzorec je skupina bitov, ki predstavlja vhode vseh senzorjev v izbranem časovnem trenutku, zaporedje teh vzorcev pa predstavlja stream vhodnih podatkov v možgane. Pomen bitov pravzaprav ni pomemben, število bitov je poljubno (majhno), a predefinirano v okviru razreda _Pattern_. Kratke sekvence majhnih vzorcev bi morale biti večinoma naučljive, pa čeprav bi vsebovale tudi beli šum. (Domen?)
 
 ### Primer
-Recimo, da en vzorec sestoji iz 3 bitov, ki jih producirajo trije binarni senzorji; posledično obstaja 8 različnih vzorcev {_0b000_, ..., _0b111_}. V možgane lahko zaporedoma pošiljamo različne vzorce in temu zaporedju v času pravim časovna sekvenca (_temporal_sequence_). Glavna težava je razpoznati ponavljajoče se sekvence in nato napovedati "prihodnost". Če napoved ni točna upamo, da je vsaj čim bolj pravilna, da torej mreža generalizira naučene vzorce in napoveduje najbolj smiselno zunanje stanje glede na preteklo dogajanje.
+Recimo, da en vzorec sestoji iz _Pattern::size() == 3_ bitov, ki jih producirajo trije binarni senzorji; posledično obstaja 8 možnih vzorcev { {_000_}, ..., {_111_} }. V možgane lahko zaporedoma pošiljamo različne vzorce in temu zaporedju v času pravim časovna sekvenca (_temporal_sequence_). Glavna težava je razpoznati ponavljajoče se sekvence in nato napovedati "prihodnost". Če napoved ni točna upamo, da je vsaj čim bolj pravilna, da torej mreža generalizira naučene vzorce in napoveduje najbolj smiselno zunanje stanje glede na preteklo dogajanje.
 
 ### Predpostavka
-Testi preverjajo obnašanje korteksa na najnižjem - fizičnem - nivoju, ki kodira informacijo s pomočjo _spike_-ov. Verjamem, da "počitek" nevrona po proženju (_refractory period_) ni zgolj fiziološka, ampak tudi informacijska nujnost. Zahteva #7 zato določa, da se vsak postavljen bit (_spike_) v vzorcu v naslednjem časovnem trenutku obvezno resetira, kar simulira refractory fazo v delovanju krmilnega nevrona ua ta bit (glej funkcijo _Testbed::random_temporal_sequence_).
+Testi preverjajo obnašanje korteksa na najnižjem - fizičnem - nivoju, ki kodira informacijo s pomočjo _spike_-ov. Verjamem, da "počitek" nevrona po proženju (_refractory period_) ni zgolj fiziološka, ampak tudi informacijska nujnost. Zahteva #7 zato določa, da se vsak postavljen bit (_spike_) v vzorcu v naslednjem časovnem trenutku obvezno resetira, kar simulira refractory fazo v delovanju krmilnega nevrona za ta bit (glej funkcijo _Testbed::random_temporal_sequence_).
 
-Primer časovne sekvence iz 5 vzorcev, ki pa **ni** cikel: <pre> {0b101, 0b010, 0b100, 0b001, 0b100} </pre>
-In še primer sekvence, ki je hkrati tudi cikel: <pre> {0b101, 0b010, 0b100, 0b001, 0b010} </pre>
+Primer časovne sekvence s 5 vzorci, ki pa **ni** cikel: <pre> {{101}, {010}, {100}, {001}, {100}} </pre>
+In še primer enako dolge sekvence, ki je hkrati tudi cikel: <pre> {{101}, {010}, {100}, {001}, {010}} </pre>
 
 ## API
 Razred _Pattern_ mora privzeto omogočati kreacijo praznega vzorca (vsi biti _off_), dostop do vsakega bita v vzorcu preko operatorja [] in primerjavo vzorcev:
@@ -43,15 +43,15 @@ Razred _Brain_ mora omogočati sprejem enega vzorca in napoved prihodnjega vzroc
 Razreda _MojBrain_ in _MojPattern_ morata omogočati naslednjo kodo:
 <pre>
 MojBrain A, B = A;
-MojPattern prazen_vzorec;
+MojPattern prazen_vzorec;				// prazen_vzorec == {000}
 	
 assert(A == B);						// primerjava mozganov
 assert(prazen_vzorec == prazen_vzorec);			// primerjava vzorcev
 assert(2*3 == MojPattern::size());			// velikost vzorca v primeru video 2x3
-// assert(prazen_vzorec[i] == false) za vsak i v intervalu [0: MojPattern::size()-1];
-prazen_vzorec[0] = true;				// spreminjanje vzorca
 
-A << prazen_vzorec << prazen_vzorec;			// A << {0b000000} << {0b000000};
+prazen_vzorec[0] = true;				// sprememba vzorca {000} -> {001}
+
+A << prazen_vzorec << prazen_vzorec;			// A << {001} << {001};
 MojPattern napoved = A.predict();
 </pre>
 
