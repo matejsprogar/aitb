@@ -43,7 +43,7 @@ namespace sprogar {
         public:
             static void run()
             {
-                const time_t temporal_sequence_length = max_learnable_temporal_sequence_length();
+                const time_t temporal_sequence_length = achievable_temporal_sequence_length();
 
                 clog << "Human-like Intelligence Testbed:\n"
                      << "Conducting tests on temporal sequences of length " << temporal_sequence_length << endl << endl;
@@ -57,7 +57,7 @@ namespace sprogar {
         private:
             using time_t = size_t;
             
-            static time_t max_learnable_temporal_sequence_length()
+            static time_t achievable_temporal_sequence_length()
             {
                 for (time_t tm = 2; tm < SimulatedInfinity; ++tm) {
                     Cortex C;
