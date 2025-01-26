@@ -274,9 +274,6 @@ namespace sprogar {
                     C << ~base;
 
                     ASSERT(time_to_adapt(C, base) <= time_to_adapt(C, ~base));
-                },
-                [](time_t temporal_sequence_length) {
-                    //clog << "#11 Generalisation (memories improve predictions)\n";
                 }
             };
         };
