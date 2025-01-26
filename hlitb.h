@@ -265,7 +265,7 @@ namespace sprogar {
                     ASSERT(different_adaptation_times_possible(random_time()));
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#12 Memory matters (Memorized experiences should facilitate adaptation.)\n";
+                    clog << "#12 Memory matters (Experience can enhance adaptation.)\n";
                     const vector<Pattern> base = circular_random_temporal_sequence(temporal_sequence_length);
 
                     Cortex C;
