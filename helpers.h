@@ -61,8 +61,8 @@ namespace sprogar {
             template <BitProvider Pattern>
             Pattern single_random_spike()
             {
-                std::mt19937 generator{ std::random_device{}() };
-                std::uniform_int_distribution<size_t> distrib{ 0, Pattern::size() - 1 };
+                static thread_local std::mt19937 generator{ std::random_device{}() };
+                static std::uniform_int_distribution<size_t> distrib{ 0, Pattern::size() - 1 };
                 const size_t id = distrib(generator);
 
                 Pattern one_spike{};
