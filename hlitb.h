@@ -248,7 +248,7 @@ namespace sprogar {
                     ASSERT(not forever_adaptable(C));
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#10 Content matters (some experiences are easier to learn)\n";
+                    clog << "#11 Content matters (some experiences are easier to learn)\n";
                     auto random_time = [=]() -> time_t {
                         const vector<Pattern>& any = circular_random_temporal_sequence(temporal_sequence_length);
                         Cortex C;
@@ -265,7 +265,7 @@ namespace sprogar {
                     ASSERT(different_adaptation_times_possible(random_time()));
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#11 Memory matters (memorized experiences cannot worsen adaptation time)\n";
+                    clog << "#12 Memory matters (memorized experiences cannot worsen adaptation time)\n";
                     const vector<Pattern> life = circular_random_temporal_sequence(SimulatedInfinity);
                     const vector<Pattern> base = circular_random_temporal_sequence(temporal_sequence_length);
 
