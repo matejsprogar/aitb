@@ -9,9 +9,9 @@ Projekt HLITB vključuje 12 domnevno potrebnih pogojev za inteligenco. Verjamem,
 
 
 ## Cilj
-Izdelati nevronsko mrežo (_class Brain_), ki na vhodu sprejme vhodni vzorec (_class Pattern_) in na izhodu uspešno napove *naslednji* vhodni vzorec. Sposobnost napovedovanja prihodnosti je preverjana s pravilnim napovedovanjem zaporedij vhodnih vzorcev, **ista** mreža pa mora biti sposobna napovedati (tudi) različno dolge vhodne sekvence. 
+Izdelati nevronsko mrežo (_class Brain_), ki na vhodu sprejme vhodni vzorec (_class Pattern_) in na izhodu uspešno napove *naslednji* vhodni vzorec. Sposobnost napovedovanja prihodnosti je preverjana s pravilnim napovedovanjem zaporedij (_sekvenc_) vhodnih vzorcev, **ista** mreža pa mora biti sposobna napovedati (tudi) različno dolge vhodne sekvence. 
 
-Vzorec je skupina bitov, ki predstavlja vhode vseh senzorjev v izbranem časovnem trenutku, zaporedje teh vzorcev pa predstavlja stream vhodnih podatkov v možgane. Pomen bitov pravzaprav ni pomemben, število bitov je poljubno (majhno), a predefinirano v okviru razreda _Pattern_. Kratke sekvence majhnih vzorcev bi morale biti večinoma naučljive, pa čeprav bi vsebovale tudi beli šum. (Domen?)
+Vzorec je skupina bitov, ki predstavlja vhode vseh senzorjev v izbranem časovnem trenutku, zaporedje vzorcev pa predstavlja sekvenco vhodnih podatkov v možgane. Število bitov v vzorcu je nespremenljivo (_Pattern::size()_). Pomen bitov v HLITB ni pomemben, saj so testi zasnovani tako, da morebitne korelacije med biti v vzorcu in v sekvenci ne vplivajo na rezultat testa. (Domen?)
 
 ### Primer
 Recimo, da en vzorec sestoji iz _Pattern::size() == 3_ bitov, ki jih producirajo trije binarni senzorji; posledično obstaja 8 možnih vzorcev { {_000_}, ..., {_111_} }. V možgane lahko zaporedoma pošiljamo različne vzorce in temu zaporedju v času pravim časovna sekvenca (_temporal_sequence_). Glavna težava je razpoznati ponavljajoče se sekvence in nato napovedati "prihodnost". Če napoved ni točna upamo, da je vsaj čim bolj pravilna, da torej mreža generalizira naučene vzorce in napoveduje najbolj smiselno zunanje stanje glede na preteklo dogajanje.
