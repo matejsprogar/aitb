@@ -119,13 +119,17 @@ namespace sprogar {
 
                 return predictions;
             }
-            static bool adapt(Cortex& C, const vector<Pattern>& experience)
+            static time_t time_to_adapt(Cortex& C, const vector<Pattern>& experience)
             {
                 for (time_t time = 0; time < SimulatedInfinity; ++time) {
                     if (predict(C, experience) == experience)
-                        return true;
+                        return time;
                 }
-                return false;
+                return SimulatedInfinity;
+            }
+            static bool adapt(Cortex& C, const vector<Pattern>& experience)
+            {
+                return time_to_adapt(C, experience) < SimulatedInfinity;
             }
 
             static inline const vector<void (*)(time_t)> testbed =
@@ -242,6 +246,37 @@ namespace sprogar {
                     Cortex C;
 
                     ASSERT(not forever_adaptable(C));
+                },
+                [](time_t temporal_sequence_length) {
+                    clog << "#10 Content matters (some experiences are easier to learn)\n";
+                    auto random_time = [=]() -> time_t {
+                        const vector<Pattern>& any = circular_random_temporal_sequence(temporal_sequence_length);
+                        Cortex C;
+                        return time_to_adapt(C, any);
+                    };
+                    auto different_adaptation_times_possible = [&](time_t base_time) -> bool {
+                        for (time_t time = 0; time < SimulatedInfinity; ++time) {
+                            if (base_time != random_time())
+                                return true;
+                        }
+                        return false;
+                    };
+
+                    ASSERT(different_adaptation_times_possible(random_time()));
+                },
+                [](time_t temporal_sequence_length) {
+                    clog << "#11 Memory matters (memorized experiences cannot worsen adaptation time)\n";
+                    const vector<Pattern> life = circular_random_temporal_sequence(SimulatedInfinity);
+                    const vector<Pattern> base = circular_random_temporal_sequence(temporal_sequence_length);
+
+                    Cortex C;
+                    adapt(C, base);
+                    C << ~base;
+
+                    ASSERT(time_to_adapt(C, base) <= time_to_adapt(C, ~base));
+                },
+                [](time_t temporal_sequence_length) {
+                    //clog << "#11 Generalisation (memories improve predictions)\n";
                 }
             };
         };

@@ -49,6 +49,16 @@ namespace sprogar {
             }
 
             template <BitProvider Pattern>
+            std::vector<Pattern> operator ~(const std::vector<Pattern>& sequence)
+            {
+                std::vector<Pattern> inverted{};
+                inverted.reserve(sequence.size());
+                for (const Pattern& pattern : sequence)
+                    inverted.push_back(~pattern);
+                return inverted;
+            }
+
+            template <BitProvider Pattern>
             Pattern single_random_spike()
             {
                 std::mt19937 generator{ std::random_device{}() };
