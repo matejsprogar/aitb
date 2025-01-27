@@ -135,7 +135,7 @@ namespace sprogar {
             static inline const vector<void (*)(time_t)> testbed =
             {
                 [](time_t) {
-                    clog << "#1 Knowledgeless start (no bias)\n";
+                    clog << "#1 Knowledgeless start (No bias.)\n";
 
                     Cortex C;
 
@@ -143,7 +143,7 @@ namespace sprogar {
                     ASSERT(C.predict() == Pattern{});
                 },
                 [](time_t) {
-                    clog << "#2 Information (input creates bias)\n";
+                    clog << "#2 Information (Input creates bias.)\n";
 
                     Cortex C;
                     C << random_pattern();
@@ -151,7 +151,7 @@ namespace sprogar {
                     ASSERT(C != Cortex{});
                 },
                 [](time_t) {
-                    clog << "#3 Determinism (equal state implies equal life)\n";
+                    clog << "#3 Determinism (Equal state implies equal life.)\n";
                     const vector<Pattern> life = random_temporal_sequence(SimulatedInfinity);
 
                     Cortex C, D;
@@ -161,7 +161,7 @@ namespace sprogar {
                     ASSERT(C == D);
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#4 Observability (equal behaviour implies equal state)\n";
+                    clog << "#4 Observability (Equal behaviour implies equal state.)\n";
                     auto equal_behaviour = [&](Cortex& C, Cortex& D) {
                         for (time_t time = 0; time < SimulatedInfinity; ++time) {
                             const auto prediction = C.predict();
@@ -182,7 +182,7 @@ namespace sprogar {
                     ASSERT(equal_behaviour(C, D));
                 },
                 [](time_t) {
-                    clog << "#5 Time (the ordering of inputs matters)\n";
+                    clog << "#5 Time (The ordering of inputs matters.)\n";
                     const Pattern any = random_pattern(), other = ~any;
 
                     Cortex C, D;
@@ -192,7 +192,7 @@ namespace sprogar {
                     ASSERT(C != D);
                 },
                 [](time_t) {
-                    clog << "#6 Sensitivity (brains are chaotic systems, sensitive to initial conditions)\n";
+                    clog << "#6 Sensitivity (Brains are chaotic systems, sensitive to initial conditions.)\n";
                     const Pattern initial_condition = random_pattern();
                     const vector<Pattern> life = random_temporal_sequence(SimulatedInfinity);
 
@@ -203,7 +203,7 @@ namespace sprogar {
                     ASSERT(C != D);
                 },
                 [](time_t) {
-                    clog << "#7 Refractory period (each spike (1) must be followed by a no-spike (0) event)\n";
+                    clog << "#7 Refractory period (Each spike (1) must be followed by a no-spike (0) event.)\n";
                     const Pattern no_spikes{}, one_spike = helpers::single_random_spike<Pattern>();
                     const vector<Pattern> learnable = { one_spike, no_spikes };
                     const vector<Pattern> unlearnable = { one_spike, one_spike };
@@ -214,12 +214,12 @@ namespace sprogar {
                     ASSERT(not adapt(D, unlearnable));
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#8 Adaptable (can predict sequences)\n";
+                    clog << "#8 Adaptable (Able to predict sequences.)\n";
 
                     ASSERT(temporal_sequence_length > 1);
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#9 Universal (can predict longer sequences)\n";
+                    clog << "#9 Universal (Able to predict longer sequences.)\n";
                     auto learn_a_longer_sequence = [&]() -> bool {
                         for (time_t tm{}; tm < SimulatedInfinity; ++tm) {
                             Cortex C;
@@ -233,7 +233,7 @@ namespace sprogar {
                     ASSERT(learn_a_longer_sequence());
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#10 Ageing (you can't teach an old dog new tricks)\n";
+                    clog << "#10 Ageing (You can't teach an old dog new tricks.)\n";
                     auto adaptable_forever = [&](Cortex& dog) -> bool {
                         for (time_t tm{}; tm < SimulatedInfinity; ++tm) {
                             vector<Pattern> new_trick = circular_random_temporal_sequence(temporal_sequence_length);
@@ -248,7 +248,7 @@ namespace sprogar {
                     ASSERT(not adaptable_forever(C));
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#11 Content matters (some experiences are easier to learn)\n";
+                    clog << "#11 Content matters (Some experiences are easier to learn.)\n";
                     auto one_time = [=]() -> time_t {
                         const vector<Pattern>& any = circular_random_temporal_sequence(temporal_sequence_length);
                         Cortex C;
@@ -266,7 +266,7 @@ namespace sprogar {
                     ASSERT(adaptation_times_differ());
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#12 History matters (Experience affects adaptation.)\n";
+                    clog << "#12 History matters (Experience can help adaptation.)\n";
                     const vector<Pattern> sequence = circular_random_temporal_sequence(temporal_sequence_length);
 
                     Cortex C;
