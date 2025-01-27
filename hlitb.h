@@ -266,14 +266,14 @@ namespace sprogar {
                     ASSERT(adaptation_times_differ());
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#12 Memory matters (Experience can enhance adaptation.)\n";
+                    clog << "#12 History matters (Experience affects adaptation.)\n";
                     const vector<Pattern> sequence = circular_random_temporal_sequence(temporal_sequence_length);
 
                     Cortex C;
-                    adapt(C, sequence);
+                    auto initial_time = adapt(C, sequence);
                     C << ~sequence;
 
-                    ASSERT(time_to_adapt(C, sequence) <= time_to_adapt(C, ~sequence));
+                    ASSERT(time_to_adapt(C, sequence) <= initial_time);
                 }
             };
         };
