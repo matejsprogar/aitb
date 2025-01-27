@@ -271,7 +271,7 @@ namespace sprogar {
 
                     Cortex C;
                     time_t initial_time = time_to_adapt(C, sequence);
-                    C << ~sequence;
+                    C << Pattern{};
 
                     ASSERT(time_to_adapt(C, sequence) <= initial_time);
                 }
