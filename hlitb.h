@@ -59,11 +59,11 @@ namespace sprogar {
             
             static time_t achievable_temporal_sequence_length()
             {
-                for (time_t tm = 2; tm < SimulatedInfinity; ++tm) {
+                for (time_t length = 2; length < SimulatedInfinity; ++length) {
                     Cortex C;
                     const vector<Pattern> sequence = circular_random_temporal_sequence(tm);
                     if (!adapt(C, sequence))
-                        return tm - 1;
+                        return length - 1;
                 }
                 return SimulatedInfinity;
             }
@@ -121,7 +121,7 @@ namespace sprogar {
             }
             static time_t time_to_adapt(Cortex& C, const vector<Pattern>& experience)
             {
-                for (time_t time = 0; time < SimulatedInfinity; ++time) {
+                for (time_t time = 0; time < SimulatedInfinity; time += experience.size()) {
                     if (predict(C, experience) == experience)
                         return time;
                 }
@@ -164,7 +164,7 @@ namespace sprogar {
                     clog << "#4 Observability (Equal behaviour implies equal state.)\n";
                     auto equal_behaviour = [&](Cortex& C, Cortex& D) {
                         for (time_t time = 0; time < SimulatedInfinity; ++time) {
-                            const auto prediction = C.predict();
+                            const Pattern prediction = C.predict();
                             if (prediction != D.predict())
                                 return false;
                             C << prediction;
@@ -221,7 +221,7 @@ namespace sprogar {
                 [](time_t temporal_sequence_length) {
                     clog << "#9 Universal (Able to predict longer sequences.)\n";
                     auto learn_a_longer_sequence = [&]() -> bool {
-                        for (time_t tm{}; tm < SimulatedInfinity; ++tm) {
+                        for (size_t attempt = 0; attempt < SimulatedInfinity; ++attempt) {
                             Cortex C;
                             const vector<Pattern> longer_sequence = circular_random_temporal_sequence(temporal_sequence_length + 1);
                             if (adapt(C, longer_sequence))
@@ -235,7 +235,7 @@ namespace sprogar {
                 [](time_t temporal_sequence_length) {
                     clog << "#10 Ageing (You can't teach an old dog new tricks.)\n";
                     auto adaptable_forever = [&](Cortex& dog) -> bool {
-                        for (time_t tm{}; tm < SimulatedInfinity; ++tm) {
+                        for (size_t attempt = 0; attempt < SimulatedInfinity; ++attempt) {
                             vector<Pattern> new_trick = circular_random_temporal_sequence(temporal_sequence_length);
                             if (not adapt(dog, new_trick))
                                 return false;
