@@ -248,11 +248,11 @@ namespace sprogar {
                     ASSERT(not adaptable_forever(C));
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#11 Content matters (Some experiences are easier to learn.)\n";
+                    clog << "#11 Content matters (Different sequences have different adaptation times.)\n";
                     auto one_time = [=]() -> time_t {
-                        const vector<Pattern>& experience = circular_random_temporal_sequence(temporal_sequence_length);
+                        const vector<Pattern>& sequence = circular_random_temporal_sequence(temporal_sequence_length);
                         Cortex C;
-                        return time_to_adapt(C, experience);
+                        return time_to_adapt(C, sequence);
                     };
                     auto adaptation_time_can_differ = [&]() -> bool {
                         const time_t reference_time = one_time();
@@ -266,13 +266,13 @@ namespace sprogar {
                     ASSERT(adaptation_time_can_differ());
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#12 Everything matters (Other experiences affect adaptation time.)\n";
-                    auto adaptation_time_can_change = [&](const vector<Pattern>& sequence, time_t reference_time) -> bool {
+                    clog << "#12 Everything matters (A different cortex can have a different adaptation time.)\n";
+                    auto adaptation_time_can_vary = [&](const vector<Pattern>& sequence, time_t reference_time) -> bool {
                         for (size_t attempt = 0; attempt < SimulatedInfinity; ++attempt) {
-                            Cortex C;
-                            const vector<Pattern> other = circular_random_temporal_sequence(temporal_sequence_length);
-                            C << other;
-                            if (time_to_adapt(C, sequence) != reference_time)
+                            const vector<Pattern> experience = circular_random_temporal_sequence(temporal_sequence_length);
+                            Cortex X;
+                            X << experience;
+                            if (time_to_adapt(X, sequence) != reference_time)
                                 return true;
                         }
                         return false;
@@ -282,7 +282,7 @@ namespace sprogar {
                     Cortex C;
                     time_t default_time = time_to_adapt(C, sequence);
 
-                    ASSERT(adaptation_time_can_change(sequence, default_time));
+                    ASSERT(adaptation_time_can_vary(sequence, default_time));
                 },
                 [](time_t temporal_sequence_length) {
                     clog << "#13 ?(??)\n";
