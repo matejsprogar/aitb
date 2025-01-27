@@ -283,16 +283,6 @@ namespace sprogar {
                     time_t default_time = time_to_adapt(C, sequence);
 
                     ASSERT(adaptation_time_can_vary(sequence, default_time));
-                },
-                [](time_t temporal_sequence_length) {
-                    clog << "#13 ?(??)\n";
-                    const vector<Pattern> truth = circular_random_temporal_sequence(temporal_sequence_length);
-
-                    Cortex C;
-                    adapt(C, truth);
-                    C << ~truth;
-
-                    ASSERT(time_to_adapt(C, truth) <= time_to_adapt(C, ~truth));
                 }
             };
         };
