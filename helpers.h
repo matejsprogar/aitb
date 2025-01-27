@@ -63,10 +63,9 @@ namespace sprogar {
             {
                 static thread_local std::mt19937 generator{ std::random_device{}() };
                 static std::uniform_int_distribution<size_t> distrib{ 0, Pattern::size() - 1 };
-                const size_t id = distrib(generator);
 
                 Pattern one_spike{};
-                one_spike[id] = 1;
+                one_spike[distrib(generator)] = 1;
                 return one_spike;
             }
         }

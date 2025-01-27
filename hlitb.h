@@ -234,7 +234,7 @@ namespace sprogar {
                 },
                 [](time_t temporal_sequence_length) {
                     clog << "#10 Ageing (you can't teach an old dog new tricks)\n";
-                    auto forever_adaptable = [&](Cortex& dog) -> bool {
+                    auto adaptable_forever = [&](Cortex& dog) -> bool {
                         for (time_t tm{}; tm < SimulatedInfinity; ++tm) {
                             vector<Pattern> new_trick = circular_random_temporal_sequence(temporal_sequence_length);
                             if (not adapt(dog, new_trick))
@@ -245,24 +245,25 @@ namespace sprogar {
 
                     Cortex C;
 
-                    ASSERT(not forever_adaptable(C));
+                    ASSERT(not adaptable_forever(C));
                 },
                 [](time_t temporal_sequence_length) {
                     clog << "#11 Content matters (some experiences are easier to learn)\n";
-                    auto random_time = [=]() -> time_t {
+                    auto one_time = [=]() -> time_t {
                         const vector<Pattern>& any = circular_random_temporal_sequence(temporal_sequence_length);
                         Cortex C;
                         return time_to_adapt(C, any);
                     };
-                    auto different_adaptation_times_possible = [&](time_t base_time) -> bool {
+                    auto adaptation_times_differ = [&]() -> bool {
+                        const time_t reference_time = one_time();
                         for (time_t time = 0; time < SimulatedInfinity; ++time) {
-                            if (base_time != random_time())
+                            if (reference_time != one_time())
                                 return true;
                         }
                         return false;
                     };
 
-                    ASSERT(different_adaptation_times_possible(random_time()));
+                    ASSERT(adaptation_times_differ());
                 },
                 [](time_t temporal_sequence_length) {
                     clog << "#12 Memory matters (Experience can enhance adaptation.)\n";
