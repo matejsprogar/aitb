@@ -37,7 +37,7 @@ namespace sprogar {
         using namespace std;
 
         template <typename Cortex, typename Pattern, size_t SimulatedInfinity = 500>
-            requires InputPredictor<Cortex, Pattern> and BitProvider<Pattern>
+            requires InputPredictor<Cortex, Pattern>and BitProvider<Pattern>
         class Testbed
         {
         public:
@@ -46,8 +46,8 @@ namespace sprogar {
                 const time_t temporal_sequence_length = achievable_temporal_sequence_length();
 
                 clog << "Human-like Intelligence Testbed:\n"
-                     << "Conducting tests on temporal sequences of length " << temporal_sequence_length << endl << endl;
-                
+                    << "Conducting tests on temporal sequences of length " << temporal_sequence_length << endl << endl;
+
                 for (const auto& test : testbed)
                     test(temporal_sequence_length);
 
@@ -56,7 +56,7 @@ namespace sprogar {
 
         private:
             using time_t = size_t;
-            
+
             static time_t achievable_temporal_sequence_length()
             {
                 for (time_t length = 2; length < SimulatedInfinity; ++length) {
@@ -72,7 +72,7 @@ namespace sprogar {
             template<std::same_as<Pattern>... Patterns>
             static Pattern random_pattern(const Patterns&... off)
             {
-                static thread_local std::mt19937 generator{std::random_device{}()};
+                static thread_local std::mt19937 generator{ std::random_device{}() };
                 static std::bernoulli_distribution bd(0.5);
 
                 Pattern bits{};
@@ -86,7 +86,7 @@ namespace sprogar {
             // #7: A temporal sequence incorporates an absolute refractory period following each spike.
             static vector<Pattern> random_temporal_sequence(time_t length)
             {
-                assert (length > 0);
+                assert(length > 0);
                 vector<Pattern> seq;
                 seq.reserve(length);
 
@@ -98,7 +98,7 @@ namespace sprogar {
             }
             static vector<Pattern> circular_random_temporal_sequence(time_t circle_length)
             {
-                assert (circle_length > 1);
+                assert(circle_length > 1);
                 vector<Pattern> seq = random_temporal_sequence(circle_length);
 
                 seq.pop_back();
@@ -250,30 +250,49 @@ namespace sprogar {
                 [](time_t temporal_sequence_length) {
                     clog << "#11 Content matters (Some experiences are easier to learn.)\n";
                     auto one_time = [=]() -> time_t {
-                        const vector<Pattern>& any = circular_random_temporal_sequence(temporal_sequence_length);
+                        const vector<Pattern>& experience = circular_random_temporal_sequence(temporal_sequence_length);
                         Cortex C;
-                        return time_to_adapt(C, any);
+                        return time_to_adapt(C, experience);
                     };
-                    auto adaptation_times_differ = [&]() -> bool {
+                    auto adaptation_time_can_differ = [&]() -> bool {
                         const time_t reference_time = one_time();
-                        for (time_t time = 0; time < SimulatedInfinity; ++time) {
+                        for (size_t attempt = 0; attempt < SimulatedInfinity; ++attempt) {
                             if (one_time() != reference_time)
                                 return true;
                         }
                         return false;
                     };
 
-                    ASSERT(adaptation_times_differ());
+                    ASSERT(adaptation_time_can_differ());
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#12 History matters (Experience can help adaptation.)\n";
+                    clog << "#12 Everything matters (Other experiences affect adaptation time.)\n";
+                    auto adaptation_time_can_change = [&](const vector<Pattern>& sequence, time_t reference_time) -> bool {
+                        for (size_t attempt = 0; attempt < SimulatedInfinity; ++attempt) {
+                            Cortex C;
+                            const vector<Pattern> other = circular_random_temporal_sequence(temporal_sequence_length);
+                            C << other;
+                            if (time_to_adapt(C, sequence) != reference_time)
+                                return true;
+                        }
+                        return false;
+                    };
                     const vector<Pattern> sequence = circular_random_temporal_sequence(temporal_sequence_length);
 
                     Cortex C;
-                    time_t initial_time = time_to_adapt(C, sequence);
-                    C << Pattern{};
+                    time_t default_time = time_to_adapt(C, sequence);
 
-                    ASSERT(time_to_adapt(C, sequence) <= initial_time);
+                    ASSERT(adaptation_time_can_change(sequence, default_time));
+                },
+                [](time_t temporal_sequence_length) {
+                    clog << "#13 ?(??)\n";
+                    const vector<Pattern> truth = circular_random_temporal_sequence(temporal_sequence_length);
+
+                    Cortex C;
+                    adapt(C, truth);
+                    C << ~truth;
+
+                    ASSERT(time_to_adapt(C, truth) <= time_to_adapt(C, ~truth));
                 }
             };
         };
