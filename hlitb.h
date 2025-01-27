@@ -270,7 +270,7 @@ namespace sprogar {
                     const vector<Pattern> sequence = circular_random_temporal_sequence(temporal_sequence_length);
 
                     Cortex C;
-                    auto initial_time = adapt(C, sequence);
+                    time_t initial_time = time_to_adapt(C, sequence);
                     C << ~sequence;
 
                     ASSERT(time_to_adapt(C, sequence) <= initial_time);
