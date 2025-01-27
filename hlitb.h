@@ -61,7 +61,7 @@ namespace sprogar {
             {
                 for (time_t length = 2; length < SimulatedInfinity; ++length) {
                     Cortex C;
-                    const vector<Pattern> sequence = circular_random_temporal_sequence(tm);
+                    const vector<Pattern> sequence = circular_random_temporal_sequence(length);
                     if (!adapt(C, sequence))
                         return length - 1;
                 }
