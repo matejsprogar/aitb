@@ -257,7 +257,7 @@ namespace sprogar {
                     auto adaptation_times_differ = [&]() -> bool {
                         const time_t reference_time = one_time();
                         for (time_t time = 0; time < SimulatedInfinity; ++time) {
-                            if (reference_time != one_time())
+                            if (one_time() != reference_time)
                                 return true;
                         }
                         return false;
@@ -267,13 +267,13 @@ namespace sprogar {
                 },
                 [](time_t temporal_sequence_length) {
                     clog << "#12 Memory matters (Experience can enhance adaptation.)\n";
-                    const vector<Pattern> base = circular_random_temporal_sequence(temporal_sequence_length);
+                    const vector<Pattern> sequence = circular_random_temporal_sequence(temporal_sequence_length);
 
                     Cortex C;
-                    adapt(C, base);
-                    C << ~base;
+                    adapt(C, sequence);
+                    C << ~sequence;
 
-                    ASSERT(time_to_adapt(C, base) <= time_to_adapt(C, ~base));
+                    ASSERT(time_to_adapt(C, sequence) <= time_to_adapt(C, ~sequence));
                 }
             };
         };
