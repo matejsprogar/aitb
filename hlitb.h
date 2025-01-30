@@ -107,29 +107,37 @@ namespace sprogar {
                 return seq;
             }
 
-            static vector<Pattern> predict(Cortex& C, const vector<Pattern>& inputs)
+            static bool forever(Cortex& C, const std::vector<Pattern>& sequence)
+            {
+                for (size_t attempt = 0; attempt < SimulatedInfinity; ++attempt) {
+                    if (sequence != predict(C, sequence))
+                        return false;
+                }
+                return true;
+            }
+            static vector<Pattern> predict(Cortex& C, const vector<Pattern>& sequence)
             {
                 vector<Pattern> predictions;
-                predictions.reserve(inputs.size());
+                predictions.reserve(sequence.size());
 
-                for (const Pattern& in : inputs) {
+                for (const Pattern& in : sequence) {
                     predictions.push_back(C.predict());
                     C << in;
                 }
 
                 return predictions;
             }
-            static time_t time_to_adapt(Cortex& C, const vector<Pattern>& experience)
+            static time_t time_to_adapt(Cortex& C, const vector<Pattern>& sequence)
             {
-                for (time_t time = 0; time < SimulatedInfinity; time += experience.size()) {
-                    if (predict(C, experience) == experience)
+                for (time_t time = 0; time < SimulatedInfinity; time += sequence.size()) {
+                    if (predict(C, sequence) == sequence)
                         return time;
                 }
                 return SimulatedInfinity;
             }
-            static bool adapt(Cortex& C, const vector<Pattern>& experience)
+            static bool adapt(Cortex& C, const vector<Pattern>& sequence)
             {
-                return time_to_adapt(C, experience) < SimulatedInfinity;
+                return time_to_adapt(C, sequence) < SimulatedInfinity;
             }
 
             static inline const vector<void (*)(time_t)> testbed =
@@ -204,9 +212,9 @@ namespace sprogar {
                 },
                 [](time_t) {
                     clog << "#7 Refractory period (Each spike (1) must be followed by a no-spike (0) event.)\n";
-                    const Pattern no_spikes{}, one_spike = helpers::single_random_spike<Pattern>();
-                    const vector<Pattern> learnable = { one_spike, no_spikes };
-                    const vector<Pattern> unlearnable = { one_spike, one_spike };
+                    Pattern no_spikes{}, single_spike{}; single_spike[0] = true;
+                    const vector<Pattern> learnable = { single_spike, no_spikes };
+                    const vector<Pattern> unlearnable = { single_spike, single_spike };
 
                     Cortex C, D;
 
@@ -248,41 +256,67 @@ namespace sprogar {
                     ASSERT(not adaptable_forever(C));
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#11 Content matters (Different sequences have different adaptation times.)\n";
-                    auto one_time = [=]() -> time_t {
-                        const vector<Pattern>& sequence = circular_random_temporal_sequence(temporal_sequence_length);
+                    clog << "#11 Data (Sequence affects adaptation time.)\n";
+                    auto adaptation_time = [=]() -> time_t {
                         Cortex C;
-                        return time_to_adapt(C, sequence);
+                        return time_to_adapt(C, circular_random_temporal_sequence(temporal_sequence_length));
                     };
-                    auto adaptation_time_can_differ = [&]() -> bool {
-                        const time_t reference_time = one_time();
+                    auto adaptation_time_can_vary = [&](const time_t reference_time) -> bool {
                         for (size_t attempt = 0; attempt < SimulatedInfinity; ++attempt) {
-                            if (one_time() != reference_time)
+                            if (adaptation_time() != reference_time)
                                 return true;
                         }
                         return false;
                     };
 
-                    ASSERT(adaptation_time_can_differ());
+                    ASSERT(adaptation_time_can_vary(adaptation_time()));
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#12 Everything matters (A different cortex can have a different adaptation time.)\n";
+                    clog << "#12 Cortex (Accumulated knowledge affects adaptation time.)\n";
+                    auto adaptation_time = [=](const vector<Pattern>& sequence) -> time_t {
+                        const vector<Pattern> knowledge = circular_random_temporal_sequence(temporal_sequence_length);
+                        Cortex C; 
+                        C << knowledge;
+                        return time_to_adapt(C, sequence);
+                    };
                     auto adaptation_time_can_vary = [&](const vector<Pattern>& sequence, time_t reference_time) -> bool {
                         for (size_t attempt = 0; attempt < SimulatedInfinity; ++attempt) {
-                            const vector<Pattern> experience = circular_random_temporal_sequence(temporal_sequence_length);
-                            Cortex X;
-                            X << experience;
-                            if (time_to_adapt(X, sequence) != reference_time)
+                            if (adaptation_time(sequence) != reference_time)
                                 return true;
                         }
                         return false;
                     };
                     const vector<Pattern> sequence = circular_random_temporal_sequence(temporal_sequence_length);
 
-                    Cortex C;
-                    time_t default_time = time_to_adapt(C, sequence);
+                    ASSERT(adaptation_time_can_vary(sequence, adaptation_time(sequence)));
+                },
+                [](time_t temporal_sequence_length) {
+                    clog << "#13 Temporary (Some adaptations are temporary.)\n";
+                    auto temporary_adaptation_exists = [=]() {
+                        for (size_t attempt = 0; attempt < SimulatedInfinity; ++attempt) {
+                            const vector<Pattern> truth = circular_random_temporal_sequence(temporal_sequence_length);
+                            Cortex C;
+                            if (adapt(C, truth) and not forever(C, truth))
+                                return true;
+                        }
+                        return false;
+                    };
 
-                    ASSERT(adaptation_time_can_vary(sequence, default_time));
+                    ASSERT(temporary_adaptation_exists());
+                },
+                [](time_t temporal_sequence_length) {
+                    clog << "#14 Eternal (Some adaptations are self-preserving.)\n";
+                    auto eternal_adaptation_exists = [=]() {
+                        for (size_t attempt = 0; attempt < SimulatedInfinity; ++attempt) {
+                            const vector<Pattern> truth = circular_random_temporal_sequence(temporal_sequence_length);
+                            Cortex C;
+                            if (adapt(C, truth) and forever(C, truth))
+                                return true;
+                        }
+                        return false;
+                    };
+
+                    ASSERT(eternal_adaptation_exists());
                 }
             };
         };

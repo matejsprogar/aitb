@@ -10,7 +10,7 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR C PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR signal PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
@@ -19,6 +19,9 @@
 #pragma once
 
 #include <format>
+#include <string>
+#include <algorithm>
+#include <unordered_set>
 
 #include "concepts.h"
 
@@ -31,7 +34,7 @@ namespace sprogar {
         inline namespace helpers {
 
             template <typename T, std::ranges::range Range>
-            requires InputPredictor<T, std::ranges::range_value_t<Range>>
+                requires InputPredictor<T, std::ranges::range_value_t<Range>>
             T& operator << (T& target, Range&& range) {
                 for (auto&& elt : range)
                     target << elt;
@@ -39,35 +42,24 @@ namespace sprogar {
             }
 
             template <BitProvider Pattern>
-            requires NoUnaryTilde<Pattern>
+                requires NoUnaryTilde<Pattern>
             Pattern operator ~(const Pattern& pattern)
             {
-                Pattern inverted{};
+                Pattern bitwise_not{};
                 for (size_t i = 0; i < pattern.size(); ++i)
-                    inverted[i] = !pattern[i];
-                return inverted;
+                    bitwise_not[i] = !pattern[i];
+                return bitwise_not;
             }
 
-            template <BitProvider Pattern>
-            std::vector<Pattern> operator ~(const std::vector<Pattern>& sequence)
-            {
-                std::vector<Pattern> inverted{};
-                inverted.reserve(sequence.size());
-                for (const Pattern& pattern : sequence)
-                    inverted.push_back(~pattern);
-                return inverted;
-            }
-
-            template <BitProvider Pattern>
-            Pattern single_random_spike()
-            {
-                static thread_local std::mt19937 generator{ std::random_device{}() };
-                static std::uniform_int_distribution<size_t> distrib{ 0, Pattern::size() - 1 };
-
-                Pattern one_spike{};
-                one_spike[distrib(generator)] = 1;
-                return one_spike;
-            }
+            //template <typename T>
+            //std::vector<T> operator ~(const std::vector<T>& vec)
+            //{
+            //    std::vector<T> elementwise_not{};
+            //    elementwise_not.reserve(vec.size());
+            //    for (const T& t : vec)
+            //        elementwise_not.push_back(~t);
+            //    return elementwise_not;
+            //}
         }
     }
 }
