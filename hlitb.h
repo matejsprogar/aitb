@@ -107,7 +107,7 @@ namespace sprogar {
                 return seq;
             }
 
-            static bool exhibits_forever(Cortex& C, const std::vector<Pattern>& sequence)
+            static bool repeats_forever(Cortex& C, const std::vector<Pattern>& sequence)
             {
                 for (time_t time = 0; time < SimulatedInfinity; ++time) {
                     if (sequence != prediction(C, sequence))
@@ -178,30 +178,8 @@ namespace sprogar {
 
                     ASSERT(C == D);
                 },
-                [](time_t temporal_sequence_length) {
-                    clog << "#4 Unobservability (Different brains can exhibit equal behaviour.)\n";
-                    auto different_cortices_with_equal_behaviour = [=]() {
-                        Cortex C, D;
-                        for (time_t time = 0; time < SimulatedInfinity; ++time) {
-                            C << random_temporal_sequence(temporal_sequence_length);    // C != D
-                            const auto target_behaviour = circular_random_temporal_sequence(temporal_sequence_length);
-
-                            if (predictable(C, target_behaviour) and exhibits_forever(C, target_behaviour) and
-                                predictable(D, target_behaviour) and exhibits_forever(D, target_behaviour)) {
-                                    return std::make_pair(C, D);
-                            }
-                            C = Cortex{};
-                            D = Cortex{};
-                        }
-                        ASSERT(false);
-                    };
-
-                    auto [C, D] = different_cortices_with_equal_behaviour();
-
-                    ASSERT(C != D and behaviour(C) == behaviour(D));
-                },
                 [](time_t) {
-                    clog << "#5 Time (The ordering of inputs matters.)\n";
+                    clog << "#4 Time (The ordering of inputs matters.)\n";
                     const Pattern any = random_pattern(), other = ~any;
 
                     Cortex C, D;
@@ -211,7 +189,7 @@ namespace sprogar {
                     ASSERT(C != D);
                 },
                 [](time_t) {
-                    clog << "#6 Sensitivity (Brains are chaotic systems, sensitive to initial conditions.)\n";
+                    clog << "#5 Sensitivity (Brains are chaotic systems, sensitive to initial conditions.)\n";
                     const Pattern initial_condition = random_pattern();
                     const vector<Pattern> life = random_temporal_sequence(SimulatedInfinity);
 
@@ -222,7 +200,7 @@ namespace sprogar {
                     ASSERT(C != D);
                 },
                 [](time_t) {
-                    clog << "#7 Refractory period (Each spike (1) must be followed by a no-spike (0) event.)\n";
+                    clog << "#6 Refractory period (Each spike (1) must be followed by a no-spike (0) event.)\n";
                     Pattern no_spikes{}, single_spike{}; single_spike[0] = true;
                     const vector<Pattern> learnable = { single_spike, no_spikes };
                     const vector<Pattern> unlearnable = { single_spike, single_spike };
@@ -233,12 +211,12 @@ namespace sprogar {
                     ASSERT(not predictable(D, unlearnable));
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#8 Adaptable (Able to prediction sequences.)\n";
+                    clog << "#7 Adaptable (Able to prediction sequences.)\n";
 
                     ASSERT(temporal_sequence_length > 1);
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#9 Universal (Able to prediction longer sequences.)\n";
+                    clog << "#8 Universal (Able to prediction longer sequences.)\n";
                     auto learn_a_longer_sequence = [&]() -> bool {
                         for (size_t attempt = 0; attempt < SimulatedInfinity; ++attempt) {
                             Cortex C;
@@ -252,7 +230,7 @@ namespace sprogar {
                     ASSERT(learn_a_longer_sequence());
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#10 Ageing (You can't teach an old dog new tricks.)\n";
+                    clog << "#9 Ageing (You can't teach an old dog new tricks.)\n";
                     auto adaptable_forever = [&](Cortex& dog) -> bool {
                         for (size_t attempt = 0; attempt < SimulatedInfinity; ++attempt) {
                             vector<Pattern> new_trick = circular_random_temporal_sequence(temporal_sequence_length);
@@ -267,7 +245,7 @@ namespace sprogar {
                     ASSERT(not adaptable_forever(C));
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#11 Data (The adaptation time depends on the sequence content.)\n";
+                    clog << "#10 Data (The adaptation time depends on the sequence content.)\n";
                     auto adaptation_time = [=]() -> time_t {
                         Cortex C;
                         return time_to_adapt(C, circular_random_temporal_sequence(temporal_sequence_length));
@@ -283,7 +261,7 @@ namespace sprogar {
                     ASSERT(adaptation_time_can_vary(adaptation_time()));
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#12 Cortex (The adaptation time depends on the accumulated knowledge.)\n";
+                    clog << "#11 Cortex (The adaptation time depends on the accumulated knowledge.)\n";
                     auto adaptation_time = [=](const vector<Pattern>& sequence) -> time_t {
                         const vector<Pattern> knowledge = circular_random_temporal_sequence(temporal_sequence_length);
                         Cortex C; 
@@ -302,12 +280,12 @@ namespace sprogar {
                     ASSERT(adaptation_time_can_vary(sequence, adaptation_time(sequence)));
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#13 Temporary (A predictable sequence may repeat temporarily.)\n";
+                    clog << "#12 Temporary (A predictable sequence may repeat only temporarily.)\n";
                     auto temporary_adaptation_exists = [=]() {
                         for (size_t attempt = 0; attempt < SimulatedInfinity; ++attempt) {
                             const vector<Pattern> sequence = circular_random_temporal_sequence(temporal_sequence_length);
                             Cortex C;
-                            if (predictable(C, sequence) and not exhibits_forever(C, sequence))
+                            if (predictable(C, sequence) and not repeats_forever(C, sequence))
                                 return true;
                         }
                         return false;
@@ -316,19 +294,39 @@ namespace sprogar {
                     ASSERT(temporary_adaptation_exists());
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#14 Eternal (A predictable sequence may repeat indefinitely.)\n";
-                    auto eternal_adaptation_exists = [=]() {
+                    clog << "#13 Indefinite (A predictable sequence may repeat indefinitely.)\n";
+                    auto indefinite_adaptation_exists = [=]() {
                         for (size_t attempt = 0; attempt < SimulatedInfinity; ++attempt) {
                             const vector<Pattern> sequence = circular_random_temporal_sequence(temporal_sequence_length);
                             Cortex C;
-                            if (predictable(C, sequence) and exhibits_forever(C, sequence))
+                            if (predictable(C, sequence) and repeats_forever(C, sequence))
                                 return true;
                         }
                         return false;
                     };
 
-                    ASSERT(eternal_adaptation_exists());
-                }
+                    ASSERT(indefinite_adaptation_exists());
+                },
+                [](time_t temporal_sequence_length) {
+                    clog << "#14 Unobservability (Different internal states can lead to identical behaviours.)\n";
+                    // Null Hypothesis: "Different internal states always result in distinguishable behaviours."
+                    auto counterexample = [=]() -> std::pair<Cortex, Cortex> {
+                        for (time_t time = 0; time < SimulatedInfinity; ++time) {
+                            Cortex C, D;
+                            C << random_temporal_sequence(temporal_sequence_length);
+                            const auto target_behaviour = circular_random_temporal_sequence(temporal_sequence_length);
+
+                            if (predictable(C, target_behaviour) and repeats_forever(C, target_behaviour) and
+                                predictable(D, target_behaviour) and repeats_forever(D, target_behaviour)) {
+                                return { std::move(C), std::move(D) };
+                            }
+                        }
+                        ASSERT(false);
+                    };
+                    auto [C, D] = counterexample();
+
+                    ASSERT(C != D and behaviour(C) == behaviour(D));    // reject the null hypothesis
+                },
             };
         };
     }
