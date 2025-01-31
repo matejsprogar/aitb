@@ -62,7 +62,7 @@ namespace sprogar {
                 for (time_t length = 2; length < SimulatedInfinity; ++length) {
                     Cortex C;
                     const vector<Pattern> sequence = circular_random_temporal_sequence(length);
-                    if (!adapt(C, sequence))
+                    if (!predictable(C, sequence))
                         return length - 1;
                 }
                 return SimulatedInfinity;
@@ -75,12 +75,12 @@ namespace sprogar {
                 static thread_local std::mt19937 generator{ std::random_device{}() };
                 static std::bernoulli_distribution bd(0.5);
 
-                Pattern bits{};
-                for (size_t i = 0; i < bits.size(); ++i)
+                Pattern pattern{};
+                for (size_t i = 0; i < Pattern::size(); ++i)
                     if (!(false | ... | off[i]))
-                        bits[i] = bd(generator);
+                        pattern[i] = bd(generator);
 
-                return bits;
+                return pattern;
             }
 
             // #7: A temporal sequence incorporates an absolute refractory period following each spike.
@@ -107,43 +107,53 @@ namespace sprogar {
                 return seq;
             }
 
-            static bool forever(Cortex& C, const std::vector<Pattern>& sequence)
+            static bool exhibits_forever(Cortex& C, const std::vector<Pattern>& sequence)
             {
-                for (size_t attempt = 0; attempt < SimulatedInfinity; ++attempt) {
-                    if (sequence != predict(C, sequence))
+                for (time_t time = 0; time < SimulatedInfinity; ++time) {
+                    if (sequence != prediction(C, sequence))
                         return false;
                 }
                 return true;
             }
-            static vector<Pattern> predict(Cortex& C, const vector<Pattern>& sequence)
+            static vector<Pattern> prediction(Cortex& C, const vector<Pattern>& input_sequence)
             {
                 vector<Pattern> predictions;
-                predictions.reserve(sequence.size());
+                predictions.reserve(input_sequence.size());
 
-                for (const Pattern& in : sequence) {
+                for (const Pattern& in : input_sequence) {
                     predictions.push_back(C.predict());
                     C << in;
                 }
-
                 return predictions;
             }
-            static time_t time_to_adapt(Cortex& C, const vector<Pattern>& sequence)
+            static time_t time_to_adapt(Cortex& C, const vector<Pattern>& input_sequence)
             {
-                for (time_t time = 0; time < SimulatedInfinity; time += sequence.size()) {
-                    if (predict(C, sequence) == sequence)
+                for (time_t time = 0; time < SimulatedInfinity; time += input_sequence.size()) {
+                    if (prediction(C, input_sequence) == input_sequence)
                         return time;
                 }
                 return SimulatedInfinity;
             }
-            static bool adapt(Cortex& C, const vector<Pattern>& sequence)
+            static bool predictable(Cortex& C, const vector<Pattern>& input_sequence)
             {
-                return time_to_adapt(C, sequence) < SimulatedInfinity;
+                return time_to_adapt(C, input_sequence) < SimulatedInfinity;
+            }
+            static vector<Pattern> behaviour(Cortex& C, time_t sequence_length = SimulatedInfinity)
+            {
+                vector<Pattern> predictions;
+                predictions.reserve(sequence_length);
+
+                while (predictions.size() < sequence_length) {
+                    predictions.push_back(C.predict());
+                    C << predictions.back();
+                }
+                return predictions;
             }
 
             static inline const vector<void (*)(time_t)> testbed =
             {
                 [](time_t) {
-                    clog << "#1 Knowledgeless start (No bias.)\n";
+                    clog << "#1 Knowledgeless start (Presume that the unbiased cortex outputs an empty pattern.)\n";
 
                     Cortex C;
 
@@ -169,25 +179,26 @@ namespace sprogar {
                     ASSERT(C == D);
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#4 Observability (Equal behaviour implies equal state.)\n";
-                    auto equal_behaviour = [&](Cortex& C, Cortex& D) {
+                    clog << "#4 Unobservability (Different brains can exhibit equal behaviour.)\n";
+                    auto different_cortices_with_equal_behaviour = [=]() {
+                        Cortex C, D;
                         for (time_t time = 0; time < SimulatedInfinity; ++time) {
-                            const Pattern prediction = C.predict();
-                            if (prediction != D.predict())
-                                return false;
-                            C << prediction;
-                            D << prediction;
+                            C << random_temporal_sequence(temporal_sequence_length);    // C != D
+                            const auto target_behaviour = circular_random_temporal_sequence(temporal_sequence_length);
+
+                            if (predictable(C, target_behaviour) and exhibits_forever(C, target_behaviour) and
+                                predictable(D, target_behaviour) and exhibits_forever(D, target_behaviour)) {
+                                    return std::make_pair(C, D);
+                            }
+                            C = Cortex{};
+                            D = Cortex{};
                         }
-
-                        return true;
+                        ASSERT(false);
                     };
-                    const vector<Pattern> kick_off = random_temporal_sequence(temporal_sequence_length);
 
-                    Cortex C;
-                    C << kick_off;
-                    Cortex D = C;
+                    auto [C, D] = different_cortices_with_equal_behaviour();
 
-                    ASSERT(equal_behaviour(C, D));
+                    ASSERT(C != D and behaviour(C) == behaviour(D));
                 },
                 [](time_t) {
                     clog << "#5 Time (The ordering of inputs matters.)\n";
@@ -218,21 +229,21 @@ namespace sprogar {
 
                     Cortex C, D;
 
-                    ASSERT(adapt(C, learnable));
-                    ASSERT(not adapt(D, unlearnable));
+                    ASSERT(predictable(C, learnable));
+                    ASSERT(not predictable(D, unlearnable));
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#8 Adaptable (Able to predict sequences.)\n";
+                    clog << "#8 Adaptable (Able to prediction sequences.)\n";
 
                     ASSERT(temporal_sequence_length > 1);
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#9 Universal (Able to predict longer sequences.)\n";
+                    clog << "#9 Universal (Able to prediction longer sequences.)\n";
                     auto learn_a_longer_sequence = [&]() -> bool {
                         for (size_t attempt = 0; attempt < SimulatedInfinity; ++attempt) {
                             Cortex C;
                             const vector<Pattern> longer_sequence = circular_random_temporal_sequence(temporal_sequence_length + 1);
-                            if (adapt(C, longer_sequence))
+                            if (predictable(C, longer_sequence))
                                 return true;
                         }
                         return false;
@@ -245,7 +256,7 @@ namespace sprogar {
                     auto adaptable_forever = [&](Cortex& dog) -> bool {
                         for (size_t attempt = 0; attempt < SimulatedInfinity; ++attempt) {
                             vector<Pattern> new_trick = circular_random_temporal_sequence(temporal_sequence_length);
-                            if (not adapt(dog, new_trick))
+                            if (not predictable(dog, new_trick))
                                 return false;
                         }
                         return true;
@@ -256,7 +267,7 @@ namespace sprogar {
                     ASSERT(not adaptable_forever(C));
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#11 Data (Sequence affects adaptation time.)\n";
+                    clog << "#11 Data (The adaptation time depends on the sequence content.)\n";
                     auto adaptation_time = [=]() -> time_t {
                         Cortex C;
                         return time_to_adapt(C, circular_random_temporal_sequence(temporal_sequence_length));
@@ -272,7 +283,7 @@ namespace sprogar {
                     ASSERT(adaptation_time_can_vary(adaptation_time()));
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#12 Cortex (Accumulated knowledge affects adaptation time.)\n";
+                    clog << "#12 Cortex (The adaptation time depends on the accumulated knowledge.)\n";
                     auto adaptation_time = [=](const vector<Pattern>& sequence) -> time_t {
                         const vector<Pattern> knowledge = circular_random_temporal_sequence(temporal_sequence_length);
                         Cortex C; 
@@ -291,12 +302,12 @@ namespace sprogar {
                     ASSERT(adaptation_time_can_vary(sequence, adaptation_time(sequence)));
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#13 Temporary (Some adaptations are temporary.)\n";
+                    clog << "#13 Temporary (A predictable sequence may repeat temporarily.)\n";
                     auto temporary_adaptation_exists = [=]() {
                         for (size_t attempt = 0; attempt < SimulatedInfinity; ++attempt) {
-                            const vector<Pattern> truth = circular_random_temporal_sequence(temporal_sequence_length);
+                            const vector<Pattern> sequence = circular_random_temporal_sequence(temporal_sequence_length);
                             Cortex C;
-                            if (adapt(C, truth) and not forever(C, truth))
+                            if (predictable(C, sequence) and not exhibits_forever(C, sequence))
                                 return true;
                         }
                         return false;
@@ -305,12 +316,12 @@ namespace sprogar {
                     ASSERT(temporary_adaptation_exists());
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#14 Eternal (Some adaptations are self-preserving.)\n";
+                    clog << "#14 Eternal (A predictable sequence may repeat indefinitely.)\n";
                     auto eternal_adaptation_exists = [=]() {
                         for (size_t attempt = 0; attempt < SimulatedInfinity; ++attempt) {
-                            const vector<Pattern> truth = circular_random_temporal_sequence(temporal_sequence_length);
+                            const vector<Pattern> sequence = circular_random_temporal_sequence(temporal_sequence_length);
                             Cortex C;
-                            if (adapt(C, truth) and forever(C, truth))
+                            if (predictable(C, sequence) and exhibits_forever(C, sequence))
                                 return true;
                         }
                         return false;

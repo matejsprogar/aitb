@@ -50,16 +50,6 @@ namespace sprogar {
                     bitwise_not[i] = !pattern[i];
                 return bitwise_not;
             }
-
-            //template <typename T>
-            //std::vector<T> operator ~(const std::vector<T>& vec)
-            //{
-            //    std::vector<T> elementwise_not{};
-            //    elementwise_not.reserve(vec.size());
-            //    for (const T& t : vec)
-            //        elementwise_not.push_back(~t);
-            //    return elementwise_not;
-            //}
         }
     }
 }
