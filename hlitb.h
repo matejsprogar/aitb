@@ -191,13 +191,13 @@ namespace sprogar {
                 [](time_t) {
                     clog << "#6 Refractory period (Each spike (1) must be followed by a no-spike (0) event.)\n";
                     Pattern no_spikes{}, single_spike{}; single_spike[0] = true;
-                    const vector<Pattern> possible = { single_spike, no_spikes };
-                    const vector<Pattern> impossible = { single_spike, single_spike };
+                    const vector<Pattern> no_consecutive_spikes = { single_spike, no_spikes };
+                    const vector<Pattern> consecutive_spikes = { single_spike, single_spike };
 
                     Cortex C, D;
 
-                    ASSERT(learnable(C, possible));
-                    ASSERT(not learnable(D, impossible));
+                    ASSERT(learnable(C, no_consecutive_spikes));
+                    ASSERT(not learnable(D, consecutive_spikes));
                 },
                 [](time_t temporal_sequence_length) {
                     clog << "#7 Adaptable (Brains can learn to predict sequences of varying lengths and patterns.)\n";
