@@ -145,12 +145,11 @@ namespace sprogar {
             static inline const vector<void (*)(time_t)> testbed =
             {
                 [](time_t) {
-                    clog << "#1 Knowledgeless start (Presume that the unbiased cortex outputs an empty pattern.)\n";
+                    clog << "#1 Unbiased (Truly unbiased cortices are fundamentally identical.)\n";
 
                     Cortex C;
 
                     ASSERT(C == Cortex{});
-                    ASSERT(C.predict() == Pattern{});
                 },
                 [](time_t) {
                     clog << "#2 Information (Input creates bias.)\n";
@@ -203,12 +202,12 @@ namespace sprogar {
                     ASSERT(not predictable(D, unlearnable));
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#7 Adaptable (Able to prediction sequences.)\n";
+                    clog << "#7 Adaptable (Brains can learn to predict sequences of varying lengths and patterns.)\n";
 
                     ASSERT(temporal_sequence_length > 1);
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#8 Universal (Able to prediction longer sequences.)\n";
+                    clog << "#8 Universal (Brains can learn to predict even longer sequences.)\n";
                     auto learn_a_longer_sequence = [&]() -> bool {
                         for (size_t attempt = 0; attempt < SimulatedInfinity; ++attempt) {
                             Cortex C;
