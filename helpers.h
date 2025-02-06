@@ -46,9 +46,18 @@ namespace sprogar {
             Pattern operator ~(const Pattern& pattern)
             {
                 Pattern bitwise_not{};
-                for (size_t i = 0; i < pattern.size(); ++i)
+                for (size_t i = 0; i < Pattern::size(); ++i)
                     bitwise_not[i] = !pattern[i];
                 return bitwise_not;
+            }
+            
+            template <BitProvider T>
+            size_t count_matching_bits(const T& a, const T& b)
+            {
+                size_t matching_bits = 0;
+                for (size_t i = 0; i < T::size(); ++i)
+                    matching_bits += a[i] == b[i];
+                return matching_bits;
             }
         }
     }
