@@ -32,7 +32,7 @@ Razred _Pattern_ mora zadoščati _std::regular<Pattern>_ konceptu, nuditi dosto
 2. _bool Pattern::operator[](size_t index) const_ omogoča branje poljubnega bita v vzorcu;
 3. _Pattern::reference Pattern::operator[](size_t index)_ omogoča pisanje poljubnega bita v vzorcu;
 
-Razred _Cortex_ mora zadoščati _std::regular<Cortex>_ konceptu in dodatno omogočati še sprejem trenutnega ter napoved prihodnjega vzorca:
+Razred _Cortex_ mora zadoščati _std::regular<Cortex>_ konceptu, omogočati sprejem vzorca ter napoved prihodnjega vzorca:
 1. _cortex << pattern;_ pošlje vzorec v model;
 2. _cortex.predict();_ vrne napoved prihodnjega vzorca.
 
