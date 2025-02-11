@@ -19,9 +19,8 @@
 #pragma once
 
 #include <format>
-#include <string>
 #include <algorithm>
-#include <unordered_set>
+#include <ranges>
 
 #include "concepts.h"
 
@@ -41,15 +40,15 @@ namespace sprogar {
                 return target;
             }
 
-            template <BitProvider Pattern>
-                requires NoUnaryTilde<Pattern>
-            Pattern operator ~(const Pattern& pattern)
-            {
-                Pattern bitwise_not{};
-                for (size_t i = 0; i < Pattern::size(); ++i)
-                    bitwise_not[i] = !pattern[i];
-                return bitwise_not;
-            }
+           template <BitProvider Pattern>
+               requires NoUnaryTilde<Pattern>
+           Pattern operator ~(const Pattern& pattern)
+           {
+               Pattern bitwise_not{};
+               for (size_t i = 0; i < Pattern::size(); ++i)
+                   bitwise_not[i] = !pattern[i];
+               return bitwise_not;
+           }
             
             template <BitProvider T>
             size_t count_matching_bits(const T& a, const T& b)
