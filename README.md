@@ -1,24 +1,24 @@
-# HLITB - Human-Like Intelligence Testbed  
+# AITB - Artificial Intelligence Testbed  
 
 #### THESIS:  
   _AI needs a metric._  
 
 Large language models may seem capable of passing the Turing test, yet they still make too many mistakes to be considered the definitive solution to artificial intelligence as envisioned by A. Turing. To determine whether we have created a reasoning machine—or even if we are on the right path—we need a clear metric.  
 
-The HLITB project defines 12 (presumably) necessary conditions for intelligence. While a classical imperative program might technically satisfy these conditions, history suggests this approach is a dead end; only a neural network-based solution holds real potential.  
+The AITB project defines 12 (presumably) necessary conditions for intelligence. While a classical imperative program might technically satisfy these conditions, history suggests this approach is a dead end; only a neural network-based solution holds real potential.  
 
-## HLITB Goal  
-To provide a simple yet effective set of tests that support AI development. The well-defined HLITB criteria are designed to be both efficient and insightful, helping to identify the essential characteristics of a final AI solution.  
+## AITB Goal  
+To provide a simple yet effective set of tests that support AI development. The well-defined AITB criteria are designed to be both efficient and insightful, helping to identify the essential characteristics of a final AI solution.  
 
 ## NN Solution  
 A neural network that takes an input pattern _p<sub>t</sub>_ and successfully predicts the *next* input pattern _p<sub>t+1</sub>_. The core challenge lies in understanding why a particular input pattern occurs and leveraging that understanding to anticipate future patterns. If the prediction is not entirely accurate, the goal is for it to be as close as possible—ensuring the network generalizes learned patterns and forecasts the most plausible external state based on past events.  
 
 ### Assumptions  
-HLITB assesses predictive ability by evaluating sequences of varying lengths {_p<sub>0</sub>, p<sub>1</sub>, ..., p<sub>k</sub>_}, which represent a temporal stream of input data into the brain. Each pattern always consists of _n_ bits (|_p_| = _n_) as transmitted by all input sensors.
+AITB assesses predictive ability by evaluating sequences of varying lengths {_p<sub>0</sub>, p<sub>1</sub>, ..., p<sub>k</sub>_}, which represent a temporal stream of input data into the brain. Each pattern always consists of _n_ bits (|_p_| = _n_) as transmitted by all input sensors.
 
-HLITB simulates the behavior of the natural cortex at a structural level, where information is encoded using _spikes_. In HLITB, a set bit in a pattern represents a neural spike. Crucially, the meaning of individual bits within a pattern is not predefined and must remain undisclosed; otherwise, the system would impose explicit semantics, leading to the Symbol Grounding Problem (SGP). Instead, any necessary correlations between patterns emerge through a continuous exploratory search process.  
+AITB simulates the behavior of the natural cortex at a structural level, where information is encoded using _spikes_. In AITB, a set bit in a pattern represents a neural spike. Crucially, the meaning of individual bits within a pattern is not predefined and must remain undisclosed; otherwise, the system would impose explicit semantics, leading to the Symbol Grounding Problem (SGP). Instead, any necessary correlations between patterns emerge through a continuous exploratory search process.  
 
-HLITB also assumes that a neuron's _refractory period_ after firing is not just a physiological constraint but an essential informational mechanism. Consequently, Requirement #6 mandates that any bit set in a pattern must be reset in the next time step, mirroring the refractory phase of the corresponding control neuron (see the _Testbed::random_sequence_ function): 
+AITB also assumes that a neuron's _refractory period_ after firing is not just a physiological constraint but an essential informational mechanism. Consequently, Requirement #6 mandates that any bit set in a pattern must be reset in the next time step, mirroring the refractory phase of the corresponding control neuron (see the _Testbed::random_sequence_ function): 
 
 _p<sub>t+1</sub>[i] = 0, if p<sub>t</sub>[i] = 1_  
 
@@ -40,13 +40,13 @@ In addition to satisfying the _std::regular<Cortex>_ C++ concept, the _Cortex_ c
 ## Example of the Main Program  
 
 <pre>
-#include "hlitb.h"
+#include "aitb.h"
 class MyPattern {...};
 class MyCortex {...};
 ...
 int main()
 {
-	using Testbed = sprogar::Testbed&lt;MyBrain, MyPattern, 500/*SimulatedInfinity&gt;;
+	using Testbed = sprogar::AI::Testbed&lt;MyBrain, MyPattern, 500/*SimulatedInfinity&gt;;
 	
 	Testbed::run();
 	return 0;

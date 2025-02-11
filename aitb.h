@@ -1,9 +1,9 @@
 /*
  * Copyright 2024 Matej Sprogar <matej.sprogar@gmail.com>
  *
- * This file is part of HLITB - Human Like Intelligence Testbed.
+ * This file is part of AITB - Artificial Intelligence Testbed.
  *
- * HLITB is free software: you can redistribute it and/or modify
+ * AITB is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
@@ -34,7 +34,7 @@
 
 
 namespace sprogar {
-    inline namespace human_like_intelligence {
+    namespace AI {
         using namespace std;
 
         template <typename Cortex, typename Pattern, size_t SimulatedInfinity = 500>
@@ -46,7 +46,7 @@ namespace sprogar {
             {
                 const time_t temporal_sequence_length = achievable_sequence_length();
 
-                clog << "Human-like Intelligence Testbed:\n"
+                clog << "Artificial Intelligence Testbed:\n"
                     << "Conducting tests on temporal sequences of length " << temporal_sequence_length << endl << endl;
 
                 for (const auto& test : testbed)

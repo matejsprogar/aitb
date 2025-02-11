@@ -19,7 +19,7 @@
 #pragma once
 
 namespace sprogar {
-    inline namespace human_like_intelligence {
+    namespace AI {
 
         template <typename Cortex, typename Pattern>
         concept InputPredictor = std::regular<Cortex> and requires(Cortex cortex, const Cortex ccortex, Pattern pattern)
@@ -38,5 +38,6 @@ namespace sprogar {
 
         template <typename T>
         concept NoUnaryTilde = requires(T t) { ~t; } == false;
+
     }
 }

@@ -30,7 +30,7 @@ namespace sprogar {
     inline std::string red(const char* msg) { return std::format("\033[91m{}\033[0m", msg); }
     inline std::string green(const char* msg) { return std::format("\033[92m{}\033[0m", msg); }
 
-    inline namespace human_like_intelligence {
+    namespace AI {
         inline namespace helpers {
 
             template <typename T, std::ranges::range Range>
