@@ -160,7 +160,7 @@ namespace sprogar {
             static inline const std::vector<void (*)(time_t)> testbed =
             {
                 [](time_t) {
-                    clog << "#1 Unbiased (Truly unbiased cortices are fundamentally identical.)\n";
+                    clog << "#1 Unbiased (Truly unbiased cortices are fundamentally identical and have no Symbol Grounding Problem.)\n";
 
                     Cortex C;
 
@@ -251,9 +251,9 @@ namespace sprogar {
                         Cortex C{};
                         const time_t default_time = time_to_repeat(C, circular_random_sequence(temporal_sequence_length));
                         for (time_t time = 0; time < SimulatedInfinity; ++time) {
+                            Sequence<Pattern> another_sequence = circular_random_sequence(temporal_sequence_length);
                             Cortex X{};
-                            Sequence<Pattern> any_sequence = circular_random_sequence(temporal_sequence_length);
-                            time_t another_time = time_to_repeat(X, any_sequence);
+                            time_t another_time = time_to_repeat(X, another_sequence);
                             if (default_time != another_time)
                                 return true;
                         }
@@ -263,24 +263,24 @@ namespace sprogar {
                     ASSERT(different_sequences_can_have_different_learning_times());
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#10 State (The learning time depends on the cortex state.)\n";
-                    auto different_cortices_can_have_different_learning_times = [&](const Sequence<Pattern>& sequence) -> bool {
+                    clog << "#10 State (Learning time depends on the cortex state.)\n";
+                    auto different_cortices_can_have_different_learning_times = [&]() -> bool {
                         Cortex C{};
-                        const time_t default_time = time_to_repeat(C, sequence);
+                        const Sequence<Pattern> target_sequence = any_learnable_sequence(temporal_sequence_length);
+                        const time_t default_time = time_to_repeat(C, target_sequence);
                         for (time_t time = 0; time < SimulatedInfinity; ++time) {
                             Cortex X = random_cortex();
-                            time_t another_time = time_to_repeat(X, sequence);
+                            time_t another_time = time_to_repeat(X, target_sequence);
                             if (default_time != another_time)
                                 return true;
                         }
                         return false;
                     };
-                    const Sequence<Pattern> target = any_learnable_sequence(temporal_sequence_length);
 
-                    ASSERT(different_cortices_can_have_different_learning_times(target));
+                    ASSERT(different_cortices_can_have_different_learning_times());
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#11 Beneficial (The trained cortex predicts better than the untrained.)\n";
+                    clog << "#11 Advantage (Training improves predictions.)\n";
                     
                     size_t trained_score = 0, untrained_score = 0;
                     for (time_t time = 0; time < SimulatedInfinity; ++time) {
