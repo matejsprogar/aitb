@@ -63,7 +63,7 @@ namespace sprogar {
             {
                 for (time_t length = 2; length < SimulatedInfinity; ++length) {
                     Cortex C;
-                    const TemporalSequence<Pattern> TemporalSequence = circular_random_sequence(length);
+                    const TemporalSequence<Pattern> TemporalSequence = generate_circular_random_sequence(length);
                     if (!adapt(C, TemporalSequence))
                         return length - 1;
                 }
@@ -72,7 +72,7 @@ namespace sprogar {
 
             // Each bit in the pattern is set randomly unless explicitly required to remain off.
             template<std::same_as<Pattern>... Patterns>
-            static Pattern random_pattern(const Patterns&... off)
+            static Pattern generate_random_pattern(const Patterns&... off)
             {
                 static thread_local std::mt19937 generator{ std::random_device{}() };
                 static std::bernoulli_distribution bd(0.5);
@@ -84,41 +84,41 @@ namespace sprogar {
 
                 return pattern;
             }
-            static TemporalSequence<Pattern> random_sequence(time_t temporal_sequence_length)
+            static TemporalSequence<Pattern> generate_random_sequence(time_t temporal_sequence_length)
             {
                 assert(temporal_sequence_length > 0);
                 TemporalSequence<Pattern> TemporalSequence;
                 TemporalSequence.reserve(temporal_sequence_length);
 
-                TemporalSequence.push_back(random_pattern());
+                TemporalSequence.push_back(generate_random_pattern());
                 while (TemporalSequence.size() < temporal_sequence_length)
-                    TemporalSequence.push_back(random_pattern(TemporalSequence.back()));
+                    TemporalSequence.push_back(generate_random_pattern(TemporalSequence.back()));
 
                 return TemporalSequence;
             }
-            static TemporalSequence<Pattern> circular_random_sequence(time_t circle_length)
+            static TemporalSequence<Pattern> generate_circular_random_sequence(time_t circle_length)
             {
                 assert(circle_length > 1);
-                TemporalSequence<Pattern> TemporalSequence = random_sequence(circle_length);
+                TemporalSequence<Pattern> TemporalSequence = generate_random_sequence(circle_length);
 
                 TemporalSequence.pop_back();
-                TemporalSequence.push_back(random_pattern(TemporalSequence.back(), TemporalSequence.front()));
+                TemporalSequence.push_back(generate_random_pattern(TemporalSequence.back(), TemporalSequence.front()));
 
                 return TemporalSequence;
             }
-            static TemporalSequence<Pattern> any_learnable_sequence(time_t temporal_sequence_length)
+            static TemporalSequence<Pattern> generate_any_learnable_sequence(time_t temporal_sequence_length)
             {
                 while (true) {
                     Cortex C{};
-                    TemporalSequence<Pattern> TemporalSequence = circular_random_sequence(temporal_sequence_length);
+                    TemporalSequence<Pattern> TemporalSequence = generate_circular_random_sequence(temporal_sequence_length);
                     if (adapt(C, TemporalSequence))
                         return TemporalSequence;
                 }
             }
-            static Cortex random_cortex(time_t random_strength)
+            static Cortex generate_random_cortex(time_t random_strength)
             {
                 Cortex C{};
-                C << random_sequence(random_strength);
+                C << generate_random_sequence(random_strength);
                 return C;
             }
 
@@ -171,13 +171,13 @@ namespace sprogar {
                     clog << "#2 Emergence (Bias emerges from the inputs and experiences.)\n";
 
                     Cortex C{};
-                    C << random_pattern();
+                    C << generate_random_pattern();
 
                     ASSERT(C != Cortex{});
                 },
                 [](time_t) {
                     clog << "#3 Determinism (Equal state implies equal life.)\n";
-                    const TemporalSequence<Pattern> life = random_sequence(SimulatedInfinity);
+                    const TemporalSequence<Pattern> life = generate_random_sequence(SimulatedInfinity);
 
                     Cortex C{}, D{};
                     C << life;
@@ -187,7 +187,7 @@ namespace sprogar {
                 },
                 [](time_t) {
                     clog << "#4 Time (The ordering of inputs affects the system's behavior.)\n";
-                    const Pattern any = random_pattern(), complement = ~any;
+                    const Pattern any = generate_random_pattern(), complement = ~any;
 
                     Cortex C{}, D{};
                     C << any << complement;
@@ -197,8 +197,8 @@ namespace sprogar {
                 },
                 [](time_t) {
                     clog << "#5 Sensitivity (The system behaves as a chaotic system.)\n";
-                    const Pattern initial_condition = random_pattern(), altered_initial_condition = helpers::mutate_one_bit(initial_condition);
-                    const TemporalSequence<Pattern> life = random_sequence(SimulatedInfinity);
+                    const Pattern initial_condition = generate_random_pattern(), altered_initial_condition = helpers::mutate_one_bit(initial_condition);
+                    const TemporalSequence<Pattern> life = generate_random_sequence(SimulatedInfinity);
 
                     Cortex C{}, D{};
                     C << initial_condition << life;
@@ -222,7 +222,7 @@ namespace sprogar {
                     auto can_adapt_to_longer_sequences = [&]() -> bool {
                         for (time_t time = 0; time < SimulatedInfinity; ++time) {
                             Cortex C{};
-                            const TemporalSequence<Pattern> longer_sequence = circular_random_sequence(temporal_sequence_length + 1);
+                            const TemporalSequence<Pattern> longer_sequence = generate_circular_random_sequence(temporal_sequence_length + 1);
                             if (adapt(C, longer_sequence))
                                 return true;
                         }
@@ -235,7 +235,7 @@ namespace sprogar {
                     clog << "#8 Stagnation (You can't teach an old dog new tricks.)\n";
                     auto indefinitely_adaptable = [&](Cortex& dog) -> bool {
                         for (time_t time = 0; time < SimulatedInfinity; ++time) {
-                            TemporalSequence<Pattern> new_trick = any_learnable_sequence(temporal_sequence_length);
+                            TemporalSequence<Pattern> new_trick = generate_any_learnable_sequence(temporal_sequence_length);
                             if (not adapt(dog, new_trick))
                                 return false;
                         }
@@ -249,10 +249,10 @@ namespace sprogar {
                 [](time_t temporal_sequence_length) {
                     clog << "#9 Input (Learning time depends on the TemporalSequence content.)\n";
                     auto learning_time_differs_across_sequences = [=]() -> bool {
-                        Cortex C{};
-                        const time_t default_time = time_to_repeat(C, circular_random_sequence(temporal_sequence_length));
+                        Cortex D{};
+                        const time_t default_time = time_to_repeat(D, generate_circular_random_sequence(temporal_sequence_length));
                         for (time_t time = 0; time < SimulatedInfinity; ++time) {
-                            TemporalSequence<Pattern> random_sequence = circular_random_sequence(temporal_sequence_length);
+                            TemporalSequence<Pattern> random_sequence = generate_circular_random_sequence(temporal_sequence_length);
                             Cortex C{};
                             time_t random_time = time_to_repeat(C, random_sequence);
                             if (default_time != random_time)
@@ -266,11 +266,11 @@ namespace sprogar {
                 [](time_t temporal_sequence_length) {
                     clog << "#10 Experience (Learning time depends on the state of the cortex.)\n";
                     auto learning_time_differs_across_cortices = [&]() -> bool {
-                        Cortex C{};
-                        const TemporalSequence<Pattern> target_sequence = any_learnable_sequence(temporal_sequence_length);
-                        const time_t default_time = time_to_repeat(C, target_sequence);
+                        Cortex D{};
+                        const TemporalSequence<Pattern> target_sequence = generate_any_learnable_sequence(temporal_sequence_length);
+                        const time_t default_time = time_to_repeat(D, target_sequence);
                         for (time_t time = 0; time < SimulatedInfinity; ++time) {
-                            Cortex R = random_cortex(temporal_sequence_length);
+                            Cortex R = generate_random_cortex(temporal_sequence_length);
                             time_t random_time = time_to_repeat(R, target_sequence);
                             if (default_time != random_time)
                                 return true;
@@ -285,8 +285,8 @@ namespace sprogar {
                     
                     size_t adapted_score = 0, unadapted_score = 0;
                     for (time_t time = 0; time < SimulatedInfinity; ++time) {
-                        const TemporalSequence<Pattern> facts = any_learnable_sequence(temporal_sequence_length);
-                        const Pattern disruption = random_pattern(), expectation = facts[0];
+                        const TemporalSequence<Pattern> facts = generate_any_learnable_sequence(temporal_sequence_length);
+                        const Pattern disruption = generate_random_pattern(), expectation = facts[0];
 
                         Cortex A{};
                         adapt(A, facts);
@@ -313,9 +313,9 @@ namespace sprogar {
                     std::function<std::pair<Cortex, Cortex>(time_t)> counterexample = [&](time_t length) -> std::pair<Cortex, Cortex> {
                         ASSERT(length > 1);
                         for (time_t time = 0; time < SimulatedInfinity; ++time) {
-                            const TemporalSequence<Pattern> target_behaviour = any_learnable_sequence(length);
+                            const TemporalSequence<Pattern> target_behaviour = generate_any_learnable_sequence(length);
 
-                            Cortex C{}, R = random_cortex(temporal_sequence_length);
+                            Cortex C{}, R = generate_random_cortex(temporal_sequence_length);
                             adapt(C, target_behaviour);
                             adapt(R, target_behaviour);
                             if (forever(C, target_behaviour) and forever(R, target_behaviour))
