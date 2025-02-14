@@ -35,9 +35,5 @@ namespace sprogar {
             { cpattern[size_t{}] } -> std::convertible_to<bool>;
             { Pattern::size() } -> std::convertible_to<size_t>;
         };
-
-        template <typename T>
-        concept NoUnaryTilde = requires(T t) { ~t; } == false;
-
     }
 }

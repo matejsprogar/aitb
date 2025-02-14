@@ -47,7 +47,7 @@ namespace sprogar {
                 const time_t temporal_sequence_length = achievable_sequence_length();
 
                 clog << "Artificial Intelligence Testbed:\n"
-                    << "Conducting tests on temporal sequences of length " << temporal_sequence_length << endl << endl;
+                     << "Conducting tests on temporal sequences of " << temporal_sequence_length << " patterns\n\n";
 
                 for (const auto& test : testbed)
                     test(temporal_sequence_length);
@@ -57,20 +57,20 @@ namespace sprogar {
 
         private:
             using time_t = size_t;
-            template<typename T> using Sequence = std::vector<T>;
+            template<typename T> using TemporalSequence = std::vector<T>;
 
             static time_t achievable_sequence_length()
             {
                 for (time_t length = 2; length < SimulatedInfinity; ++length) {
                     Cortex C;
-                    const Sequence<Pattern> sequence = circular_random_sequence(length);
-                    if (!adapt(C, sequence))
+                    const TemporalSequence<Pattern> TemporalSequence = circular_random_sequence(length);
+                    if (!adapt(C, TemporalSequence))
                         return length - 1;
                 }
                 return SimulatedInfinity;
             }
 
-            // Each bit is set randomly unless explicitly required to remain off.
+            // Each bit in the pattern is set randomly unless explicitly required to remain off.
             template<std::same_as<Pattern>... Patterns>
             static Pattern random_pattern(const Patterns&... off)
             {
@@ -84,241 +84,244 @@ namespace sprogar {
 
                 return pattern;
             }
-            static Sequence<Pattern> random_sequence(time_t temporal_sequence_length)
+            static TemporalSequence<Pattern> random_sequence(time_t temporal_sequence_length)
             {
                 assert(temporal_sequence_length > 0);
-                Sequence<Pattern> sequence;
-                sequence.reserve(temporal_sequence_length);
+                TemporalSequence<Pattern> TemporalSequence;
+                TemporalSequence.reserve(temporal_sequence_length);
 
-                sequence.push_back(random_pattern());
-                while (sequence.size() < temporal_sequence_length)
-                    sequence.push_back(random_pattern(sequence.back()));              // see #7
+                TemporalSequence.push_back(random_pattern());
+                while (TemporalSequence.size() < temporal_sequence_length)
+                    TemporalSequence.push_back(random_pattern(TemporalSequence.back()));
 
-                return sequence;
+                return TemporalSequence;
             }
-            static Sequence<Pattern> circular_random_sequence(time_t circle_length)
+            static TemporalSequence<Pattern> circular_random_sequence(time_t circle_length)
             {
                 assert(circle_length > 1);
-                Sequence<Pattern> sequence = random_sequence(circle_length);
+                TemporalSequence<Pattern> TemporalSequence = random_sequence(circle_length);
 
-                sequence.pop_back();
-                sequence.push_back(random_pattern(sequence.back(), sequence.front()));    // circular stream; #7
+                TemporalSequence.pop_back();
+                TemporalSequence.push_back(random_pattern(TemporalSequence.back(), TemporalSequence.front()));
 
-                return sequence;
+                return TemporalSequence;
             }
-            static Sequence<Pattern> any_learnable_sequence(time_t temporal_sequence_length)
+            static TemporalSequence<Pattern> any_learnable_sequence(time_t temporal_sequence_length)
             {
                 while (true) {
                     Cortex C{};
-                    Sequence<Pattern> sequence = circular_random_sequence(temporal_sequence_length);
-                    if (adapt(C, sequence))
-                        return sequence;
+                    TemporalSequence<Pattern> TemporalSequence = circular_random_sequence(temporal_sequence_length);
+                    if (adapt(C, TemporalSequence))
+                        return TemporalSequence;
                 }
             }
-            static Cortex random_cortex()
+            static Cortex random_cortex(time_t random_strength)
             {
                 Cortex C{};
-                C << random_pattern();
+                C << random_sequence(random_strength);
                 return C;
             }
 
-            static Sequence<Pattern> behaviour(Cortex& C, time_t behaviour_length = SimulatedInfinity)
+            static TemporalSequence<Pattern> behaviour(Cortex& C, time_t output_size = SimulatedInfinity)
             {
-                Sequence<Pattern> predictions;
-                predictions.reserve(behaviour_length);
+                TemporalSequence<Pattern> predictions;
+                predictions.reserve(output_size);
 
-                while (predictions.size() < behaviour_length) {
+                while (predictions.size() < output_size) {
                     predictions.push_back(C.predict());
                     C << predictions.back();
                 }
                 return predictions;
             }
-            static Sequence<Pattern> behaviour(Cortex& C, const Sequence<Pattern>& input_sequence)
+            static TemporalSequence<Pattern> behaviour(Cortex& C, const TemporalSequence<Pattern>& inputs)
             {
-                Sequence<Pattern> predictions;
-                predictions.reserve(input_sequence.size());
+                TemporalSequence<Pattern> predictions;
+                predictions.reserve(inputs.size());
 
-                for (const Pattern& in : input_sequence) {
+                for (const Pattern& in : inputs) {
                     predictions.push_back(C.predict());
                     C << in;
                 }
                 return predictions;
             }
-            static time_t time_to_repeat(Cortex& C, const Sequence<Pattern>& input_sequence)
+            static time_t time_to_repeat(Cortex& C, const TemporalSequence<Pattern>& inputs)
             {
-                for (time_t time = 0; time < SimulatedInfinity; time += input_sequence.size()) {
-                    if (behaviour(C, input_sequence) == input_sequence)
+                for (time_t time = 0; time < SimulatedInfinity; time += inputs.size()) {
+                    if (behaviour(C, inputs) == inputs)
                         return time;
                 }
                 return SimulatedInfinity;
             }
-            static bool adapt(Cortex& C, const Sequence<Pattern>& input_sequence)
+            static bool adapt(Cortex& C, const TemporalSequence<Pattern>& inputs)
             {
-                return time_to_repeat(C, input_sequence) < SimulatedInfinity;
+                return time_to_repeat(C, inputs) < SimulatedInfinity;
             }
 
 
             static inline const std::vector<void (*)(time_t)> testbed =
             {
                 [](time_t) {
-                    clog << "#1 Unbiased (Truly unbiased cortices are fundamentally identical and have no Symbol Grounding Problem.)\n";
+                    clog << "#1 Genesis (The system starts from a truly blank state, free of bias.)\n";
 
-                    Cortex C;
+                    Cortex C{};
 
-                    ASSERT(C == Cortex{});
+                    ASSERT(C == Cortex{});  // Requires deep comparison in operator==
                 },
                 [](time_t) {
-                    clog << "#2 Information (Input creates bias.)\n";
+                    clog << "#2 Emergence (Bias emerges from the inputs and experiences.)\n";
 
-                    Cortex C;
+                    Cortex C{};
                     C << random_pattern();
 
                     ASSERT(C != Cortex{});
                 },
                 [](time_t) {
                     clog << "#3 Determinism (Equal state implies equal life.)\n";
-                    const Sequence<Pattern> life = random_sequence(SimulatedInfinity);
+                    const TemporalSequence<Pattern> life = random_sequence(SimulatedInfinity);
 
-                    Cortex C, D;
+                    Cortex C{}, D{};
                     C << life;
                     D << life;
 
                     ASSERT(C == D);
                 },
                 [](time_t) {
-                    clog << "#4 Time (The ordering of inputs matters.)\n";
-                    const Pattern any = random_pattern(), other = ~any;
+                    clog << "#4 Time (The ordering of inputs affects the system's behavior.)\n";
+                    const Pattern any = random_pattern(), complement = ~any;
 
-                    Cortex C, D;
-                    C << any << other;
-                    D << other << any;
+                    Cortex C{}, D{};
+                    C << any << complement;
+                    D << complement << any;
 
                     ASSERT(C != D);
                 },
                 [](time_t) {
-                    clog << "#5 Sensitivity (Brains are chaotic systems, sensitive to initial conditions.)\n";
-                    const Pattern initial_condition = random_pattern();
-                    const Sequence<Pattern> life = random_sequence(SimulatedInfinity);
+                    clog << "#5 Sensitivity (The system behaves as a chaotic system.)\n";
+                    const Pattern initial_condition = random_pattern(), altered_initial_condition = helpers::mutate_one_bit(initial_condition);
+                    const TemporalSequence<Pattern> life = random_sequence(SimulatedInfinity);
 
-                    Cortex C, D;
+                    Cortex C{}, D{};
                     C << initial_condition << life;
-                    D << ~initial_condition << life;
+                    D << altered_initial_condition << life;
 
                     ASSERT(C != D);
                 },
                 [](time_t) {
-                    clog << "#6 Refractory period (Each spike (1) must be followed by a no-spike (0) event.)\n";
-                    Pattern no_spikes{}, single_spike{}; single_spike[0] = true;
-                    const Sequence<Pattern> no_consecutive_spikes = { single_spike, no_spikes };
-                    const Sequence<Pattern> consecutive_spikes = { single_spike, single_spike };
+                    clog << "#6 RefractoryPeriod (Each spike (1) must be followed by a no-spike (0).)\n";
+                    const Pattern no_spikes{}, single_spike = helpers::mutate_one_bit(no_spikes);
+                    const TemporalSequence<Pattern> no_consecutive_spikes = { single_spike, no_spikes };
+                    const TemporalSequence<Pattern> consecutive_spikes = { single_spike, single_spike };
 
-                    Cortex C, D;
+                    Cortex C{}, D{};
 
                     ASSERT(adapt(C, no_consecutive_spikes));
                     ASSERT(not adapt(D, consecutive_spikes));
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#7 Universal (Brains can adapt to predict also longer sequences.)\n";
-                    auto learn_a_longer_sequence = [&]() -> bool {
+                    clog << "#7 Scalability (The system can adapt to predict longer sequences.)\n";
+                    auto can_adapt_to_longer_sequences = [&]() -> bool {
                         for (time_t time = 0; time < SimulatedInfinity; ++time) {
-                            Cortex C;
-                            const Sequence<Pattern> longer_sequence = circular_random_sequence(temporal_sequence_length + 1);
+                            Cortex C{};
+                            const TemporalSequence<Pattern> longer_sequence = circular_random_sequence(temporal_sequence_length + 1);
                             if (adapt(C, longer_sequence))
                                 return true;
                         }
                         return false;
                     };
 
-                    ASSERT(learn_a_longer_sequence());
+                    ASSERT(can_adapt_to_longer_sequences());
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#8 Ageing (You can't teach an old dog new tricks.)\n";
-                    auto learn_forever = [&](Cortex& dog) -> bool {
+                    clog << "#8 Stagnation (You can't teach an old dog new tricks.)\n";
+                    auto indefinitely_adaptable = [&](Cortex& dog) -> bool {
                         for (time_t time = 0; time < SimulatedInfinity; ++time) {
-                            Sequence<Pattern> new_trick = any_learnable_sequence(temporal_sequence_length);
+                            TemporalSequence<Pattern> new_trick = any_learnable_sequence(temporal_sequence_length);
                             if (not adapt(dog, new_trick))
                                 return false;
                         }
                         return true;
                     };
 
-                    Cortex C;
+                    Cortex C{};
 
-                    ASSERT(not learn_forever(C));
+                    ASSERT(not indefinitely_adaptable(C));
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#9 Data (Learning time depends on the sequence content.)\n";
-                    auto different_sequences_can_have_different_learning_times = [=]() -> bool {
+                    clog << "#9 Input (Learning time depends on the TemporalSequence content.)\n";
+                    auto learning_time_differs_across_sequences = [=]() -> bool {
                         Cortex C{};
                         const time_t default_time = time_to_repeat(C, circular_random_sequence(temporal_sequence_length));
                         for (time_t time = 0; time < SimulatedInfinity; ++time) {
-                            Sequence<Pattern> another_sequence = circular_random_sequence(temporal_sequence_length);
-                            Cortex X{};
-                            time_t another_time = time_to_repeat(X, another_sequence);
-                            if (default_time != another_time)
+                            TemporalSequence<Pattern> random_sequence = circular_random_sequence(temporal_sequence_length);
+                            Cortex C{};
+                            time_t random_time = time_to_repeat(C, random_sequence);
+                            if (default_time != random_time)
                                 return true;
                         }
                         return false;
                     };
                     
-                    ASSERT(different_sequences_can_have_different_learning_times());
+                    ASSERT(learning_time_differs_across_sequences());
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#10 State (Learning time depends on the cortex state.)\n";
-                    auto different_cortices_can_have_different_learning_times = [&]() -> bool {
+                    clog << "#10 Experience (Learning time depends on the state of the cortex.)\n";
+                    auto learning_time_differs_across_cortices = [&]() -> bool {
                         Cortex C{};
-                        const Sequence<Pattern> target_sequence = any_learnable_sequence(temporal_sequence_length);
+                        const TemporalSequence<Pattern> target_sequence = any_learnable_sequence(temporal_sequence_length);
                         const time_t default_time = time_to_repeat(C, target_sequence);
                         for (time_t time = 0; time < SimulatedInfinity; ++time) {
-                            Cortex X = random_cortex();
-                            time_t another_time = time_to_repeat(X, target_sequence);
-                            if (default_time != another_time)
+                            Cortex R = random_cortex(temporal_sequence_length);
+                            time_t random_time = time_to_repeat(R, target_sequence);
+                            if (default_time != random_time)
                                 return true;
                         }
                         return false;
                     };
 
-                    ASSERT(different_cortices_can_have_different_learning_times());
+                    ASSERT(learning_time_differs_across_cortices());
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#11 Advantage (Training improves predictions.)\n";
+                    clog << "#11 Advantage (The adapted model outperforms the unadapted one.)\n";
                     
-                    size_t trained_hits = 0, untrained_hits = 0;
+                    size_t adapted_score = 0, unadapted_score = 0;
                     for (time_t time = 0; time < SimulatedInfinity; ++time) {
-                        const Sequence<Pattern> fact = any_learnable_sequence(temporal_sequence_length);
-                        const Pattern disruption = random_pattern();
+                        const TemporalSequence<Pattern> facts = any_learnable_sequence(temporal_sequence_length);
+                        const Pattern disruption = random_pattern(), expectation = facts[0];
 
-                        Cortex T{}, U{};
-                        adapt(T, fact);
-                        T << disruption << fact;
-                        U << disruption << fact;
-                        trained_hits += helpers::count_matching_bits(T.predict(), fact[0]);
-                        untrained_hits += helpers::count_matching_bits(U.predict(), fact[0]);
+                        Cortex A{};
+                        adapt(A, facts);
+                        A << disruption << facts;
+                        adapted_score += helpers::count_matches(A.predict(), expectation);
+
+                        Cortex U{};
+                        U << disruption << facts;
+                        unadapted_score += helpers::count_matches(U.predict(), expectation);
                     }
 
-                    ASSERT(trained_hits > untrained_hits);
+                    ASSERT(adapted_score > unadapted_score);
                 },
                 [](time_t temporal_sequence_length) {
                     clog << "#12 Unobservability (Different internal states can lead to identical behaviours.)\n";
-                    auto forever = [=](Cortex& C, const Sequence<Pattern>& sequence) {
+                    auto forever = [=](Cortex& C, const TemporalSequence<Pattern>& TemporalSequence) {
                         for (time_t time = 0; time < SimulatedInfinity; ++time) {
-                            if (sequence != behaviour(C, sequence.size()))
+                            if (TemporalSequence != behaviour(C, TemporalSequence.size()))
                                 return false;
                         }
                         return true;
                     };
-                    // Null Hypothesis: "Different internal states *always* result in distinguishable behaviours."
+                    // Null Hypothesis: "Different internal states always lead to different behaviors."
                     std::function<std::pair<Cortex, Cortex>(time_t)> counterexample = [&](time_t length) -> std::pair<Cortex, Cortex> {
                         ASSERT(length > 1);
                         for (time_t time = 0; time < SimulatedInfinity; ++time) {
-                            const Sequence<Pattern> target_behaviour = any_learnable_sequence(length);
+                            const TemporalSequence<Pattern> target_behaviour = any_learnable_sequence(length);
 
-                            Cortex C{}, R{random_cortex()};
+                            Cortex C{}, R = random_cortex(temporal_sequence_length);
                             adapt(C, target_behaviour);
                             adapt(R, target_behaviour);
                             if (forever(C, target_behaviour) and forever(R, target_behaviour))
                                 return { std::move(C), std::move(R) };
                         }
+                        // recursively call for smaller lengths if no counterexample is found
                         return counterexample(length - 1);
                     };
                     auto [C, D] = counterexample(temporal_sequence_length);

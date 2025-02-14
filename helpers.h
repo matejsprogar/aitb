@@ -39,21 +39,22 @@ namespace sprogar {
                     target << elt;
                 return target;
             }
-
-           template <BitProvider Pattern>
-               requires NoUnaryTilde<Pattern>
-           Pattern operator ~(const Pattern& pattern)
-           {
-               Pattern bitwise_not{};
-               for (size_t i = 0; i < Pattern::size(); ++i)
-                   bitwise_not[i] = !pattern[i];
-               return bitwise_not;
-           }
             
-            template <BitProvider T>
-            size_t count_matching_bits(const T& a, const T& b)
+            template <BitProvider Pattern>
+            size_t count_matches(const Pattern& a, const Pattern& b)
             {
-                return std::ranges::count_if(std::views::iota(0ull, T::size()), [&](size_t i) { return a[i] == b[i]; });
+                return std::ranges::count_if(std::views::iota(0ull, Pattern::size()), [&](size_t i) { return a[i] == b[i]; });
+            }
+
+            template <BitProvider Pattern>
+            Pattern mutate_one_bit(Pattern pattern)
+            {
+                static std::mt19937 rng{ std::random_device{}() };
+                static std::uniform_int_distribution<size_t> dist(0, Pattern::size() - 1);
+                const size_t random_index = dist(rng);
+
+                pattern[random_index] = !pattern[random_index];
+                return pattern;
             }
         }
     }
