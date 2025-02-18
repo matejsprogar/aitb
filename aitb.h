@@ -310,10 +310,10 @@ namespace sprogar {
                         return true;
                     };
                     // Null Hypothesis: "Different internal states always lead to different behaviors."
-                    std::function<std::pair<Cortex, Cortex>(time_t)> counterexample = [&](time_t length) -> std::pair<Cortex, Cortex> {
-                        ASSERT(length > 1);
+                    auto counterexample = [&](time_t length) -> std::pair<Cortex, Cortex> {
+                        const time_t simple_problem_size = 2;
                         for (time_t time = 0; time < SimulatedInfinity; ++time) {
-                            const TemporalSequence<Pattern> target_behaviour = generate_any_learnable_sequence(length);
+                            const TemporalSequence<Pattern> target_behaviour = generate_any_learnable_sequence(simple_problem_size);
 
                             Cortex C{}, R = generate_random_cortex(temporal_sequence_length);
                             adapt(C, target_behaviour);
@@ -321,8 +321,7 @@ namespace sprogar {
                             if (forever(C, target_behaviour) and forever(R, target_behaviour))
                                 return { std::move(C), std::move(R) };
                         }
-                        // recursively call for smaller lengths if no counterexample is found
-                        return counterexample(length - 1);
+                        ASSERT(false);
                     };
                     auto [C, D] = counterexample(temporal_sequence_length);
 
