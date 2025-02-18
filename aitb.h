@@ -301,7 +301,7 @@ namespace sprogar {
                     ASSERT(adapted_score > unadapted_score);
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#12 Unobservability (Different internal states can lead to identical behaviours.)\n";
+                    clog << "#12 Unobservability (Different internal states can lead to identical behaviour.)\n";
                     auto forever = [=](Cortex& C, const TemporalSequence<Pattern>& TemporalSequence) {
                         for (time_t time = 0; time < SimulatedInfinity; ++time) {
                             if (TemporalSequence != behaviour(C, TemporalSequence.size()))
@@ -309,7 +309,7 @@ namespace sprogar {
                         }
                         return true;
                     };
-                    // Null Hypothesis: "Different internal states always lead to different behaviors."
+                    // Null Hypothesis: "Different internal states cannot lead to a identical behavior."
                     auto counterexample = [&](time_t length) -> std::pair<Cortex, Cortex> {
                         const time_t simple_problem_size = 2;
                         for (time_t time = 0; time < SimulatedInfinity; ++time) {
