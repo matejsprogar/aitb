@@ -281,9 +281,9 @@ namespace sprogar {
                     ASSERT(learning_time_differs_across_cortices());
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#11 Advantage (The adapted model outperforms the unadapted one.)\n";
+                    clog << "#11 Advantage (Adapted models predict more accurately.)\n";
                     
-                    size_t adapted_score = 0, unadapted_score = 0;
+                    size_t average_adapted_score = 0, average_unadapted_score = 0;
                     for (time_t time = 0; time < SimulatedInfinity; ++time) {
                         const TemporalSequence<Pattern> facts = generate_any_learnable_sequence(temporal_sequence_length);
                         const Pattern disruption = generate_random_pattern(), expectation = facts[0];
@@ -291,14 +291,14 @@ namespace sprogar {
                         Cortex A{};
                         adapt(A, facts);
                         A << disruption << facts;
-                        adapted_score += helpers::count_matches(A.predict(), expectation);
+                        average_adapted_score += helpers::count_matches(A.predict(), expectation);
 
                         Cortex U{};
                         U << disruption << facts;
-                        unadapted_score += helpers::count_matches(U.predict(), expectation);
+                        average_unadapted_score += helpers::count_matches(U.predict(), expectation);
                     }
 
-                    ASSERT(adapted_score > unadapted_score);
+                    ASSERT(average_adapted_score > average_unadapted_score);
                 },
                 [](time_t temporal_sequence_length) {
                     clog << "#12 Unobservability (Different internal states can produce identical behaviour.)\n";
