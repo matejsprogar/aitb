@@ -46,7 +46,7 @@ class MyCortex {...};
 ...
 int main()
 {
-	using Testbed = sprogar::AI::Testbed&lt;MyBrain, MyPattern, 500/*SimulatedInfinity&gt;;
+	using Testbed = sprogar::AGI::Testbed&lt;MyBrain, MyPattern, 500/*SimulatedInfinity&gt;;
 	
 	Testbed::run();
 	return 0;
