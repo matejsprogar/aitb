@@ -47,7 +47,7 @@ namespace sprogar {
             }
 
             template <BitProvider Pattern>
-            Pattern mutate_one_bit(Pattern pattern)
+            Pattern mutate(Pattern pattern)
             {
                 static std::mt19937 rng{ std::random_device{}() };
                 static std::uniform_int_distribution<size_t> dist(0, Pattern::size() - 1);
