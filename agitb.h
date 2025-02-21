@@ -247,8 +247,9 @@ namespace sprogar {
                     ASSERT(not indefinitely_adaptable(C));
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#9 Input (Learning time depends on the TemporalSequence content.)\n";
-                    auto learning_time_differs_across_sequences = [=]() -> bool {
+                    clog << "#9 Input (Learning time depends on the input sequence content.)\n";
+                    // Null Hypothesis: Learning time is independent of the input sequence
+                    auto learning_time_can_differ_across_sequences = [=]() -> bool {
                         Cortex D{};
                         const time_t default_time = time_to_repeat(D, generate_circular_random_sequence(temporal_sequence_length));
                         for (time_t time = 0; time < SimulatedInfinity; ++time) {
@@ -261,11 +262,12 @@ namespace sprogar {
                         return false;
                     };
                     
-                    ASSERT(learning_time_differs_across_sequences());
+                    ASSERT(learning_time_can_differ_across_sequences());   // rejects the null hypothesis
                 },
                 [](time_t temporal_sequence_length) {
                     clog << "#10 Experience (Learning time depends on the state of the cortex.)\n";
-                    auto learning_time_differs_across_cortices = [&]() -> bool {
+                    // Null Hypothesis: Learning time is independent of the state of the cortex
+                    auto learning_time_can_differ_across_cortices = [&]() -> bool {
                         Cortex D{};
                         const TemporalSequence<Pattern> target_sequence = generate_any_learnable_sequence(temporal_sequence_length);
                         const time_t default_time = time_to_repeat(D, target_sequence);
@@ -278,10 +280,31 @@ namespace sprogar {
                         return false;
                     };
 
-                    ASSERT(learning_time_differs_across_cortices());
+                    ASSERT(learning_time_can_differ_across_cortices());   // rejects the null hypothesis
                 },
                 [](time_t temporal_sequence_length) {
-                    clog << "#11 Advantage (Adapted models predict more accurately.)\n";
+                    clog << "#11 Unobservability (Different internal states can produce identical behaviour.)\n";
+                    // Null Hypothesis: "Different cortices cannot produce identical behavior."
+                    auto behaviour_can_be_identical_across_cortices = [&]() -> bool {
+                        const time_t nontrivial_problem_size = 2;
+
+                        for (time_t time = 0; time < SimulatedInfinity; ++time) {
+                            const TemporalSequence<Pattern> target_behaviour = generate_any_learnable_sequence(nontrivial_problem_size);
+                            Cortex C{}, R = generate_random_cortex(temporal_sequence_length);
+                            adapt(C, target_behaviour);
+                            adapt(R, target_behaviour);
+
+                            ASSERT(C != R);
+                            if (behaviour(C) == behaviour(R))
+                                return true;    // C != R && behaviour(C) == behaviour(R)
+                        }
+                        return false;
+                    };
+
+                    ASSERT(behaviour_can_be_identical_across_cortices());   // rejects the null hypothesis
+                },
+                [](time_t temporal_sequence_length) {
+                    clog << "#12 Advantage (Adapted models predict more accurately.)\n";
                     
                     size_t average_adapted_score = 0, average_unadapted_score = 0;
                     for (time_t time = 0; time < SimulatedInfinity; ++time) {
@@ -299,28 +322,7 @@ namespace sprogar {
                     }
 
                     ASSERT(average_adapted_score > average_unadapted_score);
-                },
-                [](time_t temporal_sequence_length) {
-                    clog << "#12 Unobservability (Different internal states can produce identical behaviour.)\n";
-                    // Null Hypothesis: "Different internal states cannot produce identical behavior."
-                    auto counterexample = [&]() -> bool {
-                        const time_t nontrivial_problem_size = 2;
-
-                        for (time_t time = 0; time < SimulatedInfinity; ++time) {
-                            const TemporalSequence<Pattern> target_behaviour = generate_any_learnable_sequence(nontrivial_problem_size);
-                            Cortex C{}, R = generate_random_cortex(temporal_sequence_length);
-                            adapt(C, target_behaviour);
-                            adapt(R, target_behaviour);
-
-                            ASSERT(C != R);
-                            if (behaviour(C) == behaviour(R))
-                                return true;    // C != R && behaviour(C) == behaviour(R)
-                        }
-                        return false;
-                    };
-
-                    ASSERT(counterexample());   // rejects the null hypothesis
-                }
+                }            
             };
         };
     }
