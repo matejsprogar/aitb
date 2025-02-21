@@ -1,4 +1,4 @@
-# AGITB - Artificial Intelligence Testbed  
+# AGITB - Artificial General Intelligence Testbed  
 
 #### THESIS:  
   _AI needs a metric._  
