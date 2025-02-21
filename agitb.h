@@ -106,7 +106,7 @@ namespace sprogar {
 
                 return sequence;
             }
-            static TemporalSequence<Pattern> generate_any_learnable_sequence(time_t temporal_sequence_length)
+            static TemporalSequence<Pattern> generate_random_learnable_sequence(time_t temporal_sequence_length)
             {
                 while (true) {
                     Cortex C{};
@@ -235,7 +235,7 @@ namespace sprogar {
                     clog << "#8 Stagnation (You can't teach an old dog new tricks.)\n";
                     auto indefinitely_adaptable = [&](Cortex& dog) -> bool {
                         for (time_t time = 0; time < SimulatedInfinity; ++time) {
-                            TemporalSequence<Pattern> new_trick = generate_any_learnable_sequence(temporal_sequence_length);
+                            TemporalSequence<Pattern> new_trick = generate_random_learnable_sequence(temporal_sequence_length);
                             if (not adapt(dog, new_trick))
                                 return false;
                         }
@@ -269,7 +269,7 @@ namespace sprogar {
                     // Null Hypothesis: Learning time is independent of the state of the cortex
                     auto learning_time_can_differ_across_cortices = [&]() -> bool {
                         Cortex D{};
-                        const TemporalSequence<Pattern> target_sequence = generate_any_learnable_sequence(temporal_sequence_length);
+                        const TemporalSequence<Pattern> target_sequence = generate_random_learnable_sequence(temporal_sequence_length);
                         const time_t default_time = time_to_repeat(D, target_sequence);
                         for (time_t time = 0; time < SimulatedInfinity; ++time) {
                             Cortex R = generate_random_cortex(temporal_sequence_length);
@@ -289,7 +289,7 @@ namespace sprogar {
                         const time_t nontrivial_problem_size = 2;
 
                         for (time_t time = 0; time < SimulatedInfinity; ++time) {
-                            const TemporalSequence<Pattern> target_behaviour = generate_any_learnable_sequence(nontrivial_problem_size);
+                            const TemporalSequence<Pattern> target_behaviour = generate_random_learnable_sequence(nontrivial_problem_size);
                             Cortex C{}, R = generate_random_cortex(temporal_sequence_length);
                             adapt(C, target_behaviour);
                             adapt(R, target_behaviour);
@@ -308,7 +308,7 @@ namespace sprogar {
                     
                     size_t average_adapted_score = 0, average_unadapted_score = 0;
                     for (time_t time = 0; time < SimulatedInfinity; ++time) {
-                        const TemporalSequence<Pattern> facts = generate_any_learnable_sequence(temporal_sequence_length);
+                        const TemporalSequence<Pattern> facts = generate_random_learnable_sequence(temporal_sequence_length);
                         const Pattern disruption = generate_random_pattern(), expectation = facts[0];
 
                         Cortex A{};
