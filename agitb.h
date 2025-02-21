@@ -133,7 +133,7 @@ namespace sprogar {
                 }
                 return predictions;
             }
-            static TemporalSequence<Pattern> behaviour(Cortex& C, const TemporalSequence<Pattern>& inputs)
+            static TemporalSequence<Pattern> predict(Cortex& C, const TemporalSequence<Pattern>& inputs)
             {
                 TemporalSequence<Pattern> predictions;
                 predictions.reserve(inputs.size());
@@ -147,7 +147,7 @@ namespace sprogar {
             static time_t time_to_repeat(Cortex& C, const TemporalSequence<Pattern>& inputs)
             {
                 for (time_t time = 0; time < SimulatedInfinity; time += inputs.size()) {
-                    if (behaviour(C, inputs) == inputs)
+                    if (predict(C, inputs) == inputs)
                         return time;
                 }
                 return SimulatedInfinity;
