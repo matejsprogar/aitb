@@ -63,8 +63,8 @@ namespace sprogar {
             {
                 for (time_t length = 2; length < SimulatedInfinity; ++length) {
                     Cortex C;
-                    const TemporalSequence<Pattern> TemporalSequence = generate_circular_random_sequence(length);
-                    if (!adapt(C, TemporalSequence))
+                    const TemporalSequence<Pattern> temporal_sequence = generate_circular_random_sequence(length);
+                    if (!adapt(C, temporal_sequence))
                         return length - 1;
                 }
                 return SimulatedInfinity;
@@ -87,32 +87,32 @@ namespace sprogar {
             static TemporalSequence<Pattern> generate_random_sequence(time_t temporal_sequence_length)
             {
                 assert(temporal_sequence_length > 0);
-                TemporalSequence<Pattern> TemporalSequence;
-                TemporalSequence.reserve(temporal_sequence_length);
+                TemporalSequence<Pattern> temporal_sequence;
+                temporal_sequence.reserve(temporal_sequence_length);
 
-                TemporalSequence.push_back(generate_random_pattern());
-                while (TemporalSequence.size() < temporal_sequence_length)
-                    TemporalSequence.push_back(generate_random_pattern(TemporalSequence.back()));
+                temporal_sequence.push_back(generate_random_pattern());
+                while (temporal_sequence.size() < temporal_sequence_length)
+                    temporal_sequence.push_back(generate_random_pattern(temporal_sequence.back()));
 
-                return TemporalSequence;
+                return temporal_sequence;
             }
             static TemporalSequence<Pattern> generate_circular_random_sequence(time_t circle_length)
             {
                 assert(circle_length > 1);
-                TemporalSequence<Pattern> TemporalSequence = generate_random_sequence(circle_length);
+                TemporalSequence<Pattern> temporal_sequence = generate_random_sequence(circle_length);
 
-                TemporalSequence.pop_back();
-                TemporalSequence.push_back(generate_random_pattern(TemporalSequence.back(), TemporalSequence.front()));
+                temporal_sequence.pop_back();
+                temporal_sequence.push_back(generate_random_pattern(temporal_sequence.back(), temporal_sequence.front()));
 
-                return TemporalSequence;
+                return temporal_sequence;
             }
             static TemporalSequence<Pattern> generate_any_learnable_sequence(time_t temporal_sequence_length)
             {
                 while (true) {
                     Cortex C{};
-                    TemporalSequence<Pattern> TemporalSequence = generate_circular_random_sequence(temporal_sequence_length);
-                    if (adapt(C, TemporalSequence))
-                        return TemporalSequence;
+                    TemporalSequence<Pattern> temporal_sequence = generate_circular_random_sequence(temporal_sequence_length);
+                    if (adapt(C, temporal_sequence))
+                        return temporal_sequence;
                 }
             }
             static Cortex generate_random_cortex(time_t random_strength)
