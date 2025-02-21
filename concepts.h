@@ -1,7 +1,7 @@
 /*
  * Copyright 2024 Matej Sprogar <matej.sprogar@gmail.com>
  * 
- * This file is part of AITB - Artificial Intelligence Testbed.
+ * This file is part of AGITB - Artificial General Intelligence Testbed.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 #pragma once
 
 namespace sprogar {
-    namespace AI {
+    namespace AGI {
 
         template <typename Cortex, typename Pattern>
         concept InputPredictor = std::regular<Cortex> and requires(Cortex cortex, const Cortex ccortex, Pattern pattern)

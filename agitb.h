@@ -1,7 +1,7 @@
 /*
  * Copyright 2024 Matej Sprogar <matej.sprogar@gmail.com>
  * 
- * This file is part of AITB - Artificial Intelligence Testbed.
+ * This file is part of AGITB - Artificial General Intelligence Testbed.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@
 
 
 namespace sprogar {
-    namespace AI {
+    namespace AGI {
         using namespace std;
 
         template <typename Cortex, typename Pattern, size_t SimulatedInfinity = 500>
@@ -311,10 +311,10 @@ namespace sprogar {
                     };
                     // Null Hypothesis: "Different internal states cannot produce identical behavior."
                     auto counterexample = [&](time_t length) -> std::pair<Cortex, Cortex> {
-                        const time_t simple_problem_size = 2;
-                        for (time_t time = 0; time < SimulatedInfinity; ++time) {
-                            const TemporalSequence<Pattern> target_behaviour = generate_any_learnable_sequence(simple_problem_size);
+                        const time_t simplest_nontrivial_problem_size = 2;
 
+                        for (time_t time = 0; time < SimulatedInfinity; ++time) {
+                            const TemporalSequence<Pattern> target_behaviour = generate_any_learnable_sequence(simplest_nontrivial_problem_size);
                             Cortex C{}, R = generate_random_cortex(temporal_sequence_length);
                             adapt(C, target_behaviour);
                             adapt(R, target_behaviour);

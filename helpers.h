@@ -1,7 +1,7 @@
 /*
  * Copyright 2024 Matej Sprogar <matej.sprogar@gmail.com>
  * 
- * This file is part of AITB - Artificial Intelligence Testbed.
+ * This file is part of AGITB - Artificial General Intelligence Testbed.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ namespace sprogar {
     inline std::string red(const char* msg) { return std::format("\033[91m{}\033[0m", msg); }
     inline std::string green(const char* msg) { return std::format("\033[92m{}\033[0m", msg); }
 
-    namespace AI {
+    namespace AGI {
         inline namespace helpers {
 
             template <typename T, std::ranges::range Range>
