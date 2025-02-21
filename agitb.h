@@ -302,30 +302,24 @@ namespace sprogar {
                 },
                 [](time_t temporal_sequence_length) {
                     clog << "#12 Unobservability (Different internal states can produce identical behaviour.)\n";
-                    auto forever = [=](Cortex& C, const TemporalSequence<Pattern>& TemporalSequence) {
-                        for (time_t time = 0; time < SimulatedInfinity; ++time) {
-                            if (TemporalSequence != behaviour(C, TemporalSequence.size()))
-                                return false;
-                        }
-                        return true;
-                    };
                     // Null Hypothesis: "Different internal states cannot produce identical behavior."
-                    auto counterexample = [&](time_t length) -> std::pair<Cortex, Cortex> {
-                        const time_t simplest_nontrivial_problem_size = 2;
+                    auto counterexample = [&]() -> bool {
+                        const time_t nontrivial_problem_size = 2;
 
                         for (time_t time = 0; time < SimulatedInfinity; ++time) {
-                            const TemporalSequence<Pattern> target_behaviour = generate_any_learnable_sequence(simplest_nontrivial_problem_size);
+                            const TemporalSequence<Pattern> target_behaviour = generate_any_learnable_sequence(nontrivial_problem_size);
                             Cortex C{}, R = generate_random_cortex(temporal_sequence_length);
                             adapt(C, target_behaviour);
                             adapt(R, target_behaviour);
-                            if (forever(C, target_behaviour) and forever(R, target_behaviour))
-                                return { std::move(C), std::move(R) };
-                        }
-                        ASSERT(false);
-                    };
-                    auto [C, D] = counterexample(temporal_sequence_length);
 
-                    ASSERT(C != D and behaviour(C) == behaviour(D));    // reject the null hypothesis
+                            ASSERT(C != R);
+                            if (behaviour(C) == behaviour(R))
+                                return true;    // C != R && behaviour(C) == behaviour(R)
+                        }
+                        return false;
+                    };
+
+                    ASSERT(counterexample());   // rejects the null hypothesis
                 }
             };
         };
