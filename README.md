@@ -1,14 +1,14 @@
 # AGITB - Artificial General Intelligence Testbed  
 
 #### THESIS:  
-  _AI needs a metric._  
+  _AGI needs a metric._  
 
 Large language models may seem capable of passing the Turing test, yet they still make too many mistakes to be considered the definitive solution to artificial intelligence as envisioned by A. Turing. To determine whether we have created a reasoning machine—or even if we are on the right path—we need a clear metric.  
 
 The AGITB project defines 12 (presumably) necessary conditions for intelligence. While a classical imperative program might technically satisfy these conditions, history suggests this approach is a dead end; only a neural network-based solution holds real potential.  
 
 ## AGITB Goal  
-To provide a simple yet effective set of tests that support AI development. The well-defined AGITB criteria are designed to be both efficient and insightful, helping to identify the essential characteristics of a final AI solution.  
+To provide a simple yet effective set of tests that support AGI development. The well-defined AGITB criteria are designed to be both efficient and insightful, helping to identify the essential characteristics of a final AGI solution.  
 
 ## NN Solution  
 A neural network that takes an input pattern _p<sub>t</sub>_ and successfully predicts the *next* input pattern _p<sub>t+1</sub>_. The core challenge lies in understanding why a particular input pattern occurs and leveraging that understanding to anticipate future patterns. If the prediction is not entirely accurate, the goal is for it to be as close as possible—ensuring the network generalizes learned patterns and forecasts the most plausible external state based on past events.  
